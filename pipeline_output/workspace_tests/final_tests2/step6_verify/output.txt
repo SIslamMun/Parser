@@ -1,0 +1,19 @@
+============================================================
+Citation Verification (Single File Mode)
+============================================================
+Input: final_tests2/step5_doi2bib/references.bib
+Output: final_tests2/step6_verify
+
+
+Results:
+  Verified: 0
+  arXiv: 6
+  Searched: 0
+  Website: 0
+  Manual: 0
+  Failed: 0
+
+Total verified: 6
+Total failed: 0
+
+Output written to: final_tests2/step6_verify

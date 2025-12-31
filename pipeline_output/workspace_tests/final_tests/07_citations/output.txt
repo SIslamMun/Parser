@@ -1,0 +1,10 @@
+Fetching citations for DOI:10.1038/nature12373...
+  Found 5 citing papers
+# Papers citing this work (5)
+
+1. Linlin Li, Lingxuan Kong, Jingying Chen et al. (2026). Charge compensation boosts luminous efficiency to achieve ultra-low doped optical thermometer CaWO4: Tb3+ phosphors. DOI:10.1016/j.jlumin.2025.121725
+2. Tao Hu, Kun Huang, Xinhui He et al. (2026). Integrated portable dual-mode multimorphic ferromagnetic metal defect detection device based on diamond NV centers. DOI:10.1016/j.measurement.2025.119628
+3. Jia Su, Zenghao Kong, Fei Kong et al. (2025). Double-Layered Silica-Engineered Fluorescent Nanodiamonds for Catalytic Generation and Quantum Sensing of Active Radicals.
+4. Dannareli Barron-Ortiz, Enric Pérez-Parets, R. Cadena-Nava et al. (2025). Internal 3D temperature mapping in biological systems using ratiometric light-sheet imaging and lipid-coated upconversion nanothermometers. DOI:10.3762/bjnano.16.159
+5. H. Kono, H. Yukawa, Takeshi Hiromoto et al. (2025). Quantum Life Science: A Paradigm for Life Science Research.. DOI:10.1021/acsnano.4c14828
+

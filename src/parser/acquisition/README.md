@@ -11,7 +11,7 @@ This module handles downloading scientific papers from multiple sources.
 ### CLI Commands
 
 ```bash
-# Single paper
+# Single paper (DOI preferred for peer-reviewed papers)
 parser retrieve --doi "10.1038/nature12373"
 parser retrieve --title "Attention Is All You Need"
 parser retrieve arXiv:1706.03762
@@ -34,8 +34,36 @@ from parser.acquisition import PaperRetriever, Config
 config = Config.load()
 retriever = PaperRetriever(config)
 
-result = await retriever.retrieve("10.1038/nature12373", output_dir="./papers")
+result = await retriever.retrieve(doi="10.1038/nature12373", output_dir="./papers")
 ```
+
+## Retrieval Strategy
+
+### Metadata Resolution Order (Peer-Reviewed First)
+
+| Priority | Source | Type | Purpose |
+|----------|--------|------|---------|
+| 1 | CrossRef | Peer-reviewed | Most authoritative for published papers |
+| 2 | Semantic Scholar | Both | Good coverage, DOI/arXiv support |
+| 3 | OpenAlex | Both | Broad coverage fallback |
+| 4 | arXiv | Preprints | Fallback when peer-reviewed not found |
+
+### Per-Source Download Order
+
+**arXiv:** arXiv ID → arXiv URL → Title search (70% threshold)
+
+**Sci-Hub/LibGen:** Title first → DOI fallback (configurable via `lookup_priority`)
+
+### DOI Validation
+
+Automatically skips problematic DOIs:
+- **Peer reviews** (`10.14293/...sor-...`) - Not the actual paper
+- **Book chapters** (`10.1007/978-`, `10.1016/b978-`, `10.1201/978...`) - Often paywalled reprints
+- **Datasets** (`10.5281/zenodo...`) - Not papers
+
+### Title Mismatch Detection
+
+Catches false positives for confusing terms (llama vs LLaMA, falcon vs Falcon LLM, etc.)
 
 ## Module Structure
 
@@ -66,6 +94,6 @@ See [config.yaml](../../../config.yaml) for full configuration options.
 
 Key settings:
 - `sources.<name>.enabled` - Enable/disable each source
-- `sources.<name>.delay` - Rate limit delay in seconds
-- `output.filename_format` - PDF naming format
-- `retrieval.skip_existing` - Skip already downloaded papers
+- `sources.<name>.priority` - Source priority (lower = tried first)
+- `download.lookup_priority` - Title vs DOI search order
+- `download.skip_existing` - Skip already downloaded papers

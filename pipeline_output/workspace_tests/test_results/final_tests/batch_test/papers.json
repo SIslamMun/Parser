@@ -1,0 +1,20 @@
+[
+  {
+    "type": "arxiv",
+    "value": "2303.08774",
+    "title": "GPT-4 Technical Report",
+    "url": "https://arxiv.org/abs/2303.08774"
+  },
+  {
+    "type": "doi",
+    "value": "10.1038/nature14539",
+    "title": "Deep Learning",
+    "url": "https://doi.org/10.1038/nature14539"
+  },
+  {
+    "type": "arxiv",
+    "value": "1706.03762",
+    "title": "Attention is All you Need",
+    "url": "https://arxiv.org/abs/1706.03762"
+  }
+]

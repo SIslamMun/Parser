@@ -1,0 +1,602 @@
+[
+  {
+    "type": "github",
+    "value": "langchain-ai/langgraph",
+    "title": "langgraph",
+    "authors": "",
+    "year": "",
+    "url": "https://github.com/langchain-ai/langgraph"
+  },
+  {
+    "type": "github",
+    "value": "Artsplendr/GraphRAG-Implementations",
+    "title": "GraphRAG-Implementations",
+    "authors": "",
+    "year": "",
+    "url": "https://github.com/Artsplendr/GraphRAG-Implementations"
+  },
+  {
+    "type": "arxiv",
+    "value": "2407.21059",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://arxiv.org/abs/2407.21059"
+  },
+  {
+    "type": "arxiv",
+    "value": "2401.15884",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://arxiv.org/abs/2401.15884"
+  },
+  {
+    "type": "arxiv",
+    "value": "2310.11511",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://arxiv.org/abs/2310.11511"
+  },
+  {
+    "type": "arxiv",
+    "value": "2404.16130",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://arxiv.org/abs/2404.16130"
+  },
+  {
+    "type": "arxiv",
+    "value": "2403.14403",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://arxiv.org/abs/2403.14403"
+  },
+  {
+    "type": "arxiv",
+    "value": "2005.11401",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://arxiv.org/abs/2005.11401"
+  },
+  {
+    "type": "paper",
+    "value": "LangChain vs LlamaIndex",
+    "title": "LangChain vs LlamaIndex",
+    "authors": "Reddit Discussion",
+    "year": "2024",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Modular RAG: Transforming RAG Systems into LEGO-like Reconfigurable Frameworks",
+    "title": "Modular RAG: Transforming RAG Systems into LEGO-like Reconfigurable Frameworks",
+    "authors": "Gao et al.",
+    "year": "2024",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Modular RAG",
+    "title": "Modular RAG",
+    "authors": "Deepchecks",
+    "year": "",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Evolution of RAG Architecture in Large Language Models: A Comprehensive Review",
+    "title": "Evolution of RAG Architecture in Large Language Models: A Comprehensive Review",
+    "authors": "Perera et al.",
+    "year": "2025",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Evolution of a RAG Architecture",
+    "title": "Evolution of a RAG Architecture",
+    "authors": "ResearchGate",
+    "year": "2025",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Beyond Vanilla RAG: The 7 Modern RAG Architectures Every AI Engineer Must Know",
+    "title": "Beyond Vanilla RAG: The 7 Modern RAG Architectures Every AI Engineer Must Know",
+    "authors": "Naresh",
+    "year": "2025",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "A Comprehensive Guide to RAG Implementations",
+    "title": "A Comprehensive Guide to RAG Implementations",
+    "authors": "Armand",
+    "year": "2024",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Types of RAG",
+    "title": "Types of RAG",
+    "authors": "Exemplar",
+    "year": "",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Scaling Knowledge: RAG",
+    "title": "Scaling Knowledge: RAG",
+    "authors": "Substack",
+    "year": "2024",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Corrective Retrieval Augmented Generation",
+    "title": "Corrective Retrieval Augmented Generation",
+    "authors": "Yan et al.",
+    "year": "2024",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "LongRAG: A Dual-Perspective RAG System",
+    "title": "LongRAG: A Dual-Perspective RAG System",
+    "authors": "ACL Anthology",
+    "year": "2024",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Retrieval-Augmented Generation (RAG) and LLM Integration",
+    "title": "Retrieval-Augmented Generation (RAG) and LLM Integration",
+    "authors": "Tural et al.",
+    "year": "2024",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+    "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+    "authors": "Lewis et al.",
+    "year": "2020",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+    "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+    "authors": "Asai et al.",
+    "year": "2023",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "From Local to Global: A Graph RAG Approach to Query-Focused Summarization",
+    "title": "From Local to Global: A Graph RAG Approach to Query-Focused Summarization",
+    "authors": "Edge et al.",
+    "year": "2024",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Adaptive-RAG: Learning to Adapt Retrieval-Augmented Large Language Models through Question Complexity",
+    "title": "Adaptive-RAG: Learning to Adapt Retrieval-Augmented Large Language Models through Question Complexity",
+    "authors": "Jeong et al.",
+    "year": "2024",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Adaptive RAG: Ultimate Guide to Dynamic Retrieval Augmented Generation",
+    "title": "Adaptive RAG: Ultimate Guide to Dynamic Retrieval Augmented Generation",
+    "authors": "MachineLearningPlus",
+    "year": "2025",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Evolution of RAGs: Naive RAG, Advanced RAG, and Modular RAG Architectures",
+    "title": "Evolution of RAGs: Naive RAG, Advanced RAG, and Modular RAG Architectures",
+    "authors": "MarkTechPost",
+    "year": "2024",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "RAG Techniques",
+    "title": "RAG Techniques",
+    "authors": "IBM",
+    "year": "",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Retrieval-Augmented Generation Systems: A Comprehensive Survey",
+    "title": "Retrieval-Augmented Generation Systems: A Comprehensive Survey",
+    "authors": "ResearchGate",
+    "year": "2025",
+    "url": null
+  },
+  {
+    "type": "pdf",
+    "value": "https://aclanthology.org/2024.emnlp-main.1259.pdf",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://aclanthology.org/2024.emnlp-main.1259.pdf"
+  },
+  {
+    "type": "youtube",
+    "value": "BTn2x5WKJu4",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://youtube.com/watch?v=BTn2x5WKJu4"
+  },
+  {
+    "type": "website",
+    "value": "https://medium.com/@tam.tamanna18/langchain-vs-llamaindex-a-comprehensive-comparison-for-retrieval-augmented-generation-rag-0adc119363fe",
+    "title": "medium.com",
+    "authors": "",
+    "year": "",
+    "url": "https://medium.com/@tam.tamanna18/langchain-vs-llamaindex-a-comprehensive-comparison-for-retrieval-augmented-generation-rag-0adc119363fe"
+  },
+  {
+    "type": "website",
+    "value": "https://latenode.com/blog/platform-comparisons-alternatives/automation-platform-comparisons/langchain-vs-llamaindex-2025-complete-rag-framework-comparison",
+    "title": "latenode.com",
+    "authors": "",
+    "year": "",
+    "url": "https://latenode.com/blog/platform-comparisons-alternatives/automation-platform-comparisons/langchain-vs-llamaindex-2025-complete-rag-framework-comparison"
+  },
+  {
+    "type": "website",
+    "value": "https://blog.n8n.io/llamaindex-vs-langchain/",
+    "title": "blog.n8n.io",
+    "authors": "",
+    "year": "",
+    "url": "https://blog.n8n.io/llamaindex-vs-langchain/"
+  },
+  {
+    "type": "website",
+    "value": "https://www.ibm.com/think/topics/llamaindex-vs-langchain",
+    "title": "www.ibm.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.ibm.com/think/topics/llamaindex-vs-langchain"
+  },
+  {
+    "type": "website",
+    "value": "https://www.reddit.com/r/LangChain/comments/1bbog83/langchain_vs_llamaindex/",
+    "title": "www.reddit.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.reddit.com/r/LangChain/comments/1bbog83/langchain_vs_llamaindex/"
+  },
+  {
+    "type": "website",
+    "value": "https://www.deepchecks.com/glossary/modular-rag/",
+    "title": "www.deepchecks.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.deepchecks.com/glossary/modular-rag/"
+  },
+  {
+    "type": "website",
+    "value": "https://medium.com/aingineer/a-comprehensive-guide-to-implementing-modular-rag-for-scalable-ai-systems-3fb47c46dc8e",
+    "title": "medium.com",
+    "authors": "",
+    "year": "",
+    "url": "https://medium.com/aingineer/a-comprehensive-guide-to-implementing-modular-rag-for-scalable-ai-systems-3fb47c46dc8e"
+  },
+  {
+    "type": "website",
+    "value": "https://medium.com/@sahin.samia/modular-rag-using-llms-what-is-it-and-how-does-it-work-d482ebb3d372",
+    "title": "medium.com",
+    "authors": "",
+    "year": "",
+    "url": "https://medium.com/@sahin.samia/modular-rag-using-llms-what-is-it-and-how-does-it-work-d482ebb3d372"
+  },
+  {
+    "type": "website",
+    "value": "https://iupindia.in/ViewArticleDetails.asp?ArticleID=7913",
+    "title": "iupindia.in",
+    "authors": "",
+    "year": "",
+    "url": "https://iupindia.in/ViewArticleDetails.asp?ArticleID=7913"
+  },
+  {
+    "type": "website",
+    "value": "https://coralogix.com/ai-blog/evolution-of-rag-in-generative-ai/",
+    "title": "coralogix.com",
+    "authors": "",
+    "year": "",
+    "url": "https://coralogix.com/ai-blog/evolution-of-rag-in-generative-ai/"
+  },
+  {
+    "type": "website",
+    "value": "https://medium.com/@vamsikd219/the-evolution-of-retrieval-augmented-generation-rag-in-large-language-models-from-naive-to-776956336c90",
+    "title": "medium.com",
+    "authors": "",
+    "year": "",
+    "url": "https://medium.com/@vamsikd219/the-evolution-of-retrieval-augmented-generation-rag-in-large-language-models-from-naive-to-776956336c90"
+  },
+  {
+    "type": "website",
+    "value": "https://www.researchgate.net/figure/Evolution-of-a-RAG-Architecture_fig2_394049293",
+    "title": "www.researchgate.net",
+    "authors": "",
+    "year": "",
+    "url": "https://www.researchgate.net/figure/Evolution-of-a-RAG-Architecture_fig2_394049293"
+  },
+  {
+    "type": "website",
+    "value": "https://javascript.plainenglish.io/advanced-rag-comparing-graphrag-corrective-rag-and-self-rag-e633cbaf5bf7",
+    "title": "javascript.plainenglish.io",
+    "authors": "",
+    "year": "",
+    "url": "https://javascript.plainenglish.io/advanced-rag-comparing-graphrag-corrective-rag-and-self-rag-e633cbaf5bf7"
+  },
+  {
+    "type": "website",
+    "value": "https://dev.to/naresh_007/beyond-vanilla-rag-the-7-modern-rag-architectures-every-ai-engineer-must-know-4l0c",
+    "title": "dev.to",
+    "authors": "",
+    "year": "",
+    "url": "https://dev.to/naresh_007/beyond-vanilla-rag-the-7-modern-rag-architectures-every-ai-engineer-must-know-4l0c"
+  },
+  {
+    "type": "website",
+    "value": "https://newsletter.armand.so/p/comprehensive-guide-rag-implementations",
+    "title": "newsletter.armand.so",
+    "authors": "",
+    "year": "",
+    "url": "https://newsletter.armand.so/p/comprehensive-guide-rag-implementations"
+  },
+  {
+    "type": "website",
+    "value": "https://dasroot.net/posts/2025/11/longrag-vs-self-rag-vs-graphrag/",
+    "title": "dasroot.net",
+    "authors": "",
+    "year": "",
+    "url": "https://dasroot.net/posts/2025/11/longrag-vs-self-rag-vs-graphrag/"
+  },
+  {
+    "type": "website",
+    "value": "https://pub.towardsai.net/rag-architectures-every-ai-developer-must-know-a-complete-guide-f3524ee68b9c",
+    "title": "pub.towardsai.net",
+    "authors": "",
+    "year": "",
+    "url": "https://pub.towardsai.net/rag-architectures-every-ai-developer-must-know-a-complete-guide-f3524ee68b9c"
+  },
+  {
+    "type": "website",
+    "value": "https://handbook.exemplar.dev/ai_engineer/rag/types_of_rag",
+    "title": "handbook.exemplar.dev",
+    "authors": "",
+    "year": "",
+    "url": "https://handbook.exemplar.dev/ai_engineer/rag/types_of_rag"
+  },
+  {
+    "type": "website",
+    "value": "https://blog.gopenai.com/building-an-effective-rag-pipeline-a-guide-to-integrating-self-rag-corrective-rag-and-adaptive-ab7767f8ead1",
+    "title": "blog.gopenai.com",
+    "authors": "",
+    "year": "",
+    "url": "https://blog.gopenai.com/building-an-effective-rag-pipeline-a-guide-to-integrating-self-rag-corrective-rag-and-adaptive-ab7767f8ead1"
+  },
+  {
+    "type": "website",
+    "value": "https://www.meilisearch.com/blog/rag-types",
+    "title": "www.meilisearch.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.meilisearch.com/blog/rag-types"
+  },
+  {
+    "type": "website",
+    "value": "https://scalingknowledge.substack.com/p/rag",
+    "title": "scalingknowledge.substack.com",
+    "authors": "",
+    "year": "",
+    "url": "https://scalingknowledge.substack.com/p/rag"
+  },
+  {
+    "type": "website",
+    "value": "https://www.alibabacloud.com/blog/an-overview-of-methods-to-effectively-improve-rag-performance_601725",
+    "title": "www.alibabacloud.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.alibabacloud.com/blog/an-overview-of-methods-to-effectively-improve-rag-performance_601725"
+  },
+  {
+    "type": "website",
+    "value": "https://towardsdatascience.com/implementing-modular-rag-with-haystack-and-hypster-d2f0ecc88b8f/",
+    "title": "towardsdatascience.com",
+    "authors": "",
+    "year": "",
+    "url": "https://towardsdatascience.com/implementing-modular-rag-with-haystack-and-hypster-d2f0ecc88b8f/"
+  },
+  {
+    "type": "website",
+    "value": "https://par.nsf.gov/servlets/purl/10539591",
+    "title": "par.nsf.gov",
+    "authors": "",
+    "year": "",
+    "url": "https://par.nsf.gov/servlets/purl/10539591"
+  },
+  {
+    "type": "website",
+    "value": "https://www.microsoft.com/en-us/research/blog/graphrag-unlocking-llm-discovery-on-narrative-private-data/",
+    "title": "www.microsoft.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.microsoft.com/en-us/research/blog/graphrag-unlocking-llm-discovery-on-narrative-private-data/"
+  },
+  {
+    "type": "website",
+    "value": "https://medium.com/@sulbha.jindal/corrective-retrieval-augmented-generation-crag-paper-review-2bf9fe0f3b31",
+    "title": "medium.com",
+    "authors": "",
+    "year": "",
+    "url": "https://medium.com/@sulbha.jindal/corrective-retrieval-augmented-generation-crag-paper-review-2bf9fe0f3b31"
+  },
+  {
+    "type": "website",
+    "value": "https://www.datacamp.com/tutorial/self-rag",
+    "title": "www.datacamp.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.datacamp.com/tutorial/self-rag"
+  },
+  {
+    "type": "website",
+    "value": "https://medium.com/@vishnudhat/building-a-self-correcting-rag-pipeline-with-langgraph-a-practical-guide-b4add131d877",
+    "title": "medium.com",
+    "authors": "",
+    "year": "",
+    "url": "https://medium.com/@vishnudhat/building-a-self-correcting-rag-pipeline-with-langgraph-a-practical-guide-b4add131d877"
+  },
+  {
+    "type": "website",
+    "value": "https://www.analyticsvidhya.com/blog/2025/01/self-rag/",
+    "title": "www.analyticsvidhya.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.analyticsvidhya.com/blog/2025/01/self-rag/"
+  },
+  {
+    "type": "website",
+    "value": "https://medium.com/@sahin.samia/self-rag-self-reflective-retrieval-augmented-generation-the-game-changer-in-factual-ai-dd32e59e3ff9",
+    "title": "medium.com",
+    "authors": "",
+    "year": "",
+    "url": "https://medium.com/@sahin.samia/self-rag-self-reflective-retrieval-augmented-generation-the-game-changer-in-factual-ai-dd32e59e3ff9"
+  },
+  {
+    "type": "website",
+    "value": "https://www.machinelearningplus.com/gen-ai/adaptive-rag-ultimate-guide-to-dynamic-retrieval-augmented-generation/",
+    "title": "www.machinelearningplus.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.machinelearningplus.com/gen-ai/adaptive-rag-ultimate-guide-to-dynamic-retrieval-augmented-generation/"
+  },
+  {
+    "type": "website",
+    "value": "https://www.devstark.com/blog/naive-rag-advanced-rag-and-modular-rag-architectures/",
+    "title": "www.devstark.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.devstark.com/blog/naive-rag-advanced-rag-and-modular-rag-architectures/"
+  },
+  {
+    "type": "website",
+    "value": "https://www.marktechpost.com/2024/04/01/evolution-of-rags-naive-rag-advanced-rag-and-modular-rag-architectures/",
+    "title": "www.marktechpost.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.marktechpost.com/2024/04/01/evolution-of-rags-naive-rag-advanced-rag-and-modular-rag-architectures/"
+  },
+  {
+    "type": "website",
+    "value": "https://medium.com/@drjulija/what-are-naive-rag-advanced-rag-modular-rag-paradigms-edff410c202e",
+    "title": "medium.com",
+    "authors": "",
+    "year": "",
+    "url": "https://medium.com/@drjulija/what-are-naive-rag-advanced-rag-modular-rag-paradigms-edff410c202e"
+  },
+  {
+    "type": "website",
+    "value": "https://www.ibm.com/think/topics/rag-techniques",
+    "title": "www.ibm.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.ibm.com/think/topics/rag-techniques"
+  },
+  {
+    "type": "website",
+    "value": "https://ai.plainenglish.io/naive-rag-advanced-rag-modular-rag-b18b8669193e",
+    "title": "ai.plainenglish.io",
+    "authors": "",
+    "year": "",
+    "url": "https://ai.plainenglish.io/naive-rag-advanced-rag-modular-rag-b18b8669193e"
+  },
+  {
+    "type": "website",
+    "value": "https://medium.com/@jinglemind.dev/microsoft-graphrag-redefining-ai-based-content-interpretation-and-search-part-1-6491dab0e2b3",
+    "title": "medium.com",
+    "authors": "",
+    "year": "",
+    "url": "https://medium.com/@jinglemind.dev/microsoft-graphrag-redefining-ai-based-content-interpretation-and-search-part-1-6491dab0e2b3"
+  },
+  {
+    "type": "website",
+    "value": "https://graphrag.com/reference/graphrag/global-community-summary-retriever/",
+    "title": "graphrag.com",
+    "authors": "",
+    "year": "",
+    "url": "https://graphrag.com/reference/graphrag/global-community-summary-retriever/"
+  },
+  {
+    "type": "website",
+    "value": "https://www.researchgate.net/publication/394999616_Retrieval-Augmented_Generation_Systems_A_Comprehensive_Survey_of_Architectures_Applications_and_Future_Directions",
+    "title": "www.researchgate.net",
+    "authors": "",
+    "year": "",
+    "url": "https://www.researchgate.net/publication/394999616_Retrieval-Augmented_Generation_Systems_A_Comprehensive_Survey_of_Architectures_Applications_and_Future_Directions"
+  },
+  {
+    "type": "website",
+    "value": "https://medium.com/@sahin.samia/advancements-in-rag-a-comprehensive-survey-of-techniques-and-applications-b6160b035199",
+    "title": "medium.com",
+    "authors": "",
+    "year": "",
+    "url": "https://medium.com/@sahin.samia/advancements-in-rag-a-comprehensive-survey-of-techniques-and-applications-b6160b035199"
+  },
+  {
+    "type": "website",
+    "value": "https://blogs.mayankpratapsingh.in/blog/chain-of-thought-hyde-step-back-techniques",
+    "title": "blogs.mayankpratapsingh.in",
+    "authors": "",
+    "year": "",
+    "url": "https://blogs.mayankpratapsingh.in/blog/chain-of-thought-hyde-step-back-techniques"
+  },
+  {
+    "type": "website",
+    "value": "https://www.datacamp.com/blog/agentic-rag",
+    "title": "www.datacamp.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.datacamp.com/blog/agentic-rag"
+  },
+  {
+    "type": "website",
+    "value": "https://www.ibm.com/think/topics/agentic-rag",
+    "title": "www.ibm.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.ibm.com/think/topics/agentic-rag"
+  },
+  {
+    "type": "website",
+    "value": "https://developers.llamaindex.ai/python/examples/workflow/corrective_rag_pack/",
+    "title": "developers.llamaindex.ai",
+    "authors": "",
+    "year": "",
+    "url": "https://developers.llamaindex.ai/python/examples/workflow/corrective_rag_pack/"
+  },
+  {
+    "type": "website",
+    "value": "https://medium.com/the-ai-forum/implementing-advanced-rag-using-llamaindex-workflow-and-groq-bd6047299fa5",
+    "title": "medium.com",
+    "authors": "",
+    "year": "",
+    "url": "https://medium.com/the-ai-forum/implementing-advanced-rag-using-llamaindex-workflow-and-groq-bd6047299fa5"
+  }
+]

@@ -178,9 +178,37 @@ Now extract ALL references from the document above and return them as a JSON arr
             return self._parse_sync_with_anthropic_sdk(text)
     
     def _parse_sync_with_agent_sdk(self, text: str) -> AgentParseResult:
-        """Parse using claude-agent-sdk synchronously."""
+        """Parse using claude-agent-sdk synchronously.
+        
+        Falls back to direct Anthropic SDK if agent SDK fails.
+        """
         import asyncio
-        return asyncio.run(self._parse_with_agent_sdk(text))
+        try:
+            return asyncio.run(self._parse_with_agent_sdk(text))
+        except Exception as e:
+            error_msg = str(e)
+            
+            # Check for rate limit error
+            if "exit code 1" in error_msg.lower() or "rate limit" in error_msg.lower():
+                print(f"\n⚠️  Claude CLI rate limit may have been hit.")
+                print("    Check with: claude auth status")
+            
+            # Agent SDK failed, try falling back to direct API
+            api_key = os.environ.get("ANTHROPIC_API_KEY")
+            if api_key:
+                print(f"Claude Agent SDK failed, falling back to direct Anthropic API...")
+                self.api_key = api_key
+                return self._parse_sync_with_anthropic_sdk(text)
+            else:
+                # Re-raise original error if no API key available
+                raise RuntimeError(
+                    f"Claude Agent SDK failed: {e}\n\n"
+                    "Possible causes:\n"
+                    "  1. Claude CLI rate limit hit (check: claude auth status)\n"
+                    "  2. Claude CLI not authenticated (run: claude auth login)\n"
+                    "  3. Network issues\n\n"
+                    "To use direct API fallback, set ANTHROPIC_API_KEY environment variable."
+                ) from e
     
     def _parse_sync_with_anthropic_sdk(self, text: str) -> AgentParseResult:
         """Parse using direct anthropic SDK synchronously."""

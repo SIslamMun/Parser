@@ -1,0 +1,11 @@
+============================================================
+Running REGULAR (regex-based) parsing...
+============================================================
+✓ JSON: final_tests/04_parse_refs/references.json
+✓ Markdown: final_tests/04_parse_refs/references.md
+
+Found 18 references (regular):
+  arxiv: 2
+  doi: 4
+  paper: 7
+  website: 5

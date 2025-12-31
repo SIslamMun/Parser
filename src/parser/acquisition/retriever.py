@@ -186,8 +186,26 @@ class PaperRetriever:
                 error="Must provide DOI or title",
             )
 
+        # Check if DOI is problematic (peer review, book chapter, etc.)
+        if doi:
+            from ..validation import classify_doi
+            classification = classify_doi(doi)
+            if classification.get("type") in ("review", "book_chapter"):
+                warning = classification.get("warning", "Problematic DOI type")
+                if verbose:
+                    print(f"⚠ Skipping {classification['type']} DOI: {doi[:50]}...")
+                    print(f"  Reason: {warning[:80]}")
+                return RetrievalResult(
+                    doi=doi,
+                    title=title or "",
+                    status=RetrievalStatus.SKIPPED,
+                    error=warning,
+                    metadata={"doi_type": classification["type"], "warning": warning},
+                )
+
         # Setup output directory
         out_dir = Path(output_dir) if output_dir else Path(self.config.download.get("output_dir", "./downloads"))
+        out_dir.mkdir(parents=True, exist_ok=True)
         out_dir.mkdir(parents=True, exist_ok=True)
 
         # Create logger
@@ -269,11 +287,14 @@ class PaperRetriever:
     ) -> dict[str, Any] | None:
         """Resolve full metadata from DOI, arXiv ID, or title.
 
-        Tries multiple sources in order:
-        1. CrossRef (most reliable for DOIs)
-        2. Semantic Scholar (good for CS papers, supports arXiv)
+        Priority order (peer-reviewed first, then preprints):
+        1. CrossRef (peer-reviewed DOIs - most authoritative)
+        2. Semantic Scholar (good coverage, supports DOI/arXiv)
         3. OpenAlex (broad coverage)
+        4. arXiv (preprints - fallback for title-only searches)
         """
+        from ..validation import classify_doi
+        
         # Extract arXiv ID from various formats
         if doi:
             if doi.startswith("arXiv:"):
@@ -284,15 +305,16 @@ class PaperRetriever:
                 arxiv_id = doi.replace("10.48550/arXiv.", "")
                 # Keep the DOI too for CrossRef lookup
 
-        # Try CrossRef first (most comprehensive for DOIs)
+        # 1. Try CrossRef FIRST (peer-reviewed papers are more authoritative)
         crossref = self.clients.get("crossref")
         if crossref:
-            if doi:
+            if doi and not doi.startswith("10.48550/arXiv"):
+                # Skip arXiv DOIs for CrossRef - they don't have good metadata there
                 try:
                     await self.rate_limiter.wait("crossref")
                     metadata = await crossref.get_paper_metadata(doi)
                     if metadata and metadata.get("year") and metadata.get("authors"):
-                        return metadata  # Good metadata found
+                        return metadata  # Good peer-reviewed metadata found
                 except Exception:
                     pass
 
@@ -300,23 +322,28 @@ class PaperRetriever:
                 try:
                     await self.rate_limiter.wait("crossref")
                     results = await crossref.search(title, limit=5)
-                    if results:
-                        # Use the first result (CrossRef ranks by relevance)
-                        best_match = results[0]
-                        if best_match and best_match.get("year") and best_match.get("authors"):
-                            return best_match
+                    for result in results:
+                        result_doi = result.get("doi")
+                        # Validate DOI is not a book chapter or review
+                        if result_doi:
+                            classification = classify_doi(result_doi)
+                            if classification.get("type") in ("review", "book_chapter"):
+                                continue  # Skip this result
+                        # Check title similarity with higher threshold
+                        if result and result.get("year") and result.get("authors"):
+                            if self._titles_match(title, result.get("title", ""), threshold=0.8):
+                                return result
                 except Exception:
                     pass
 
-        # Try Semantic Scholar as fallback (supports DOI and arXiv)
+        # 2. Try Semantic Scholar (good coverage, supports DOI and arXiv)
         s2 = self.clients.get("semantic_scholar")
         if s2:
             identifier = None
-            # Prefer arXiv ID for arXiv papers (better coverage than arXiv DOIs)
-            if arxiv_id:
-                identifier = f"ARXIV:{arxiv_id}"
-            elif doi:
+            if doi:
                 identifier = f"DOI:{doi}"
+            elif arxiv_id:
+                identifier = f"ARXIV:{arxiv_id}"
             if identifier:
                 try:
                     await self.rate_limiter.wait("semantic_scholar")
@@ -333,7 +360,7 @@ class PaperRetriever:
                 except Exception:
                     pass
 
-        # Try OpenAlex as last resort
+        # 3. Try OpenAlex (broad coverage)
         openalex = self.clients.get("openalex")
         if openalex and doi:
             try:
@@ -357,6 +384,31 @@ class PaperRetriever:
                             "authors": authors,
                             "year": pub_year,
                             "venue": result.get("host_venue", {}).get("display_name"),
+                        }
+            except Exception:
+                pass
+
+        # 4. Try arXiv as FALLBACK (preprints - for title-only when peer-reviewed not found)
+        arxiv_client = self.clients.get("arxiv")
+        if arxiv_client and title and not doi:
+            try:
+                await self.rate_limiter.wait("arxiv")
+                # Use quoted search for exact title matching
+                quoted_title = f'"{title}"'
+                results = await arxiv_client.search(quoted_title, limit=5)
+                for result in results:
+                    found_title = result.get("title", "")
+                    # Require high similarity (0.8) for arXiv results
+                    if result.get("arxiv_id") and self._titles_match(title, found_title, threshold=0.8):
+                        found_arxiv_id = result["arxiv_id"]
+                        return {
+                            "doi": f"10.48550/arXiv.{found_arxiv_id.split('v')[0]}",
+                            "title": found_title,
+                            "authors": result.get("authors", []),
+                            "year": result.get("year"),
+                            "venue": "arXiv (preprint)",
+                            "arxiv_id": found_arxiv_id,
+                            "is_preprint": True,
                         }
             except Exception:
                 pass
@@ -525,38 +577,60 @@ class PaperRetriever:
         return None, "PDF download failed"
 
     async def _try_arxiv(self, client, doi, title, output_path, logger) -> tuple[RetrievalResult | None, str]:
-        """Try arXiv source."""
-        # Check if arXiv paper by DOI
+        """Try arXiv source.
+        
+        Order of attempts:
+        1. arXiv ID (if provided in DOI like 10.48550/arXiv.XXXX.XXXXX)
+        2. arXiv URL (if title contains arxiv.org URL)
+        3. Title search (search arXiv by title with strict matching)
+        """
+        arxiv_id = None
+        
+        # 1. Extract arXiv ID from DOI (e.g., 10.48550/arXiv.1706.03762)
         if doi and "arxiv" in doi.lower():
             logger.detail(f"arXiv DOI detected: {doi}")
-            # Extract arXiv ID from DOI
-            arxiv_id = re.search(r"arxiv\.(\d+\.\d+)", doi.lower())
-            if arxiv_id:
-                pdf_url = f"https://arxiv.org/pdf/{arxiv_id.group(1)}.pdf"
-                logger.detail(f"PDF URL: {pdf_url}")
-                if await self._download_pdf(pdf_url, output_path):
-                    return RetrievalResult(
-                        doi=doi, title=title, status=RetrievalStatus.SUCCESS,
-                        source="arxiv", pdf_path=str(output_path),
-                    ), "downloaded"
+            match = re.search(r"arxiv\.(\d+\.\d+)", doi.lower())
+            if match:
+                arxiv_id = match.group(1)
+        
+        # 2. Check if title contains arXiv URL (e.g., "https://arxiv.org/abs/1706.03762")
+        if not arxiv_id and title:
+            url_match = re.search(r"arxiv\.org/(?:abs|pdf)/([\d.]+)", title)
+            if url_match:
+                arxiv_id = url_match.group(1)
+                logger.detail(f"arXiv URL detected in title: {arxiv_id}")
+        
+        # Try direct download if we have an arXiv ID
+        if arxiv_id:
+            pdf_url = f"https://arxiv.org/pdf/{arxiv_id}.pdf"
+            logger.detail(f"Trying arXiv ID {arxiv_id}: {pdf_url}")
+            if await self._download_pdf(pdf_url, output_path):
+                return RetrievalResult(
+                    doi=doi, title=title, status=RetrievalStatus.SUCCESS,
+                    source="arxiv", pdf_path=str(output_path),
+                ), "downloaded via arXiv ID"
+            else:
+                logger.detail(f"Direct download failed for arXiv ID {arxiv_id}")
 
-        # Search by title using arXiv search API
-        logger.detail(f"Searching by title: {title[:50]}...")
-        # Use quoted search for better exact matching
-        quoted_title = f'"{title}"'
-        results = await client.search(quoted_title, limit=5)
-        for metadata in results:
-            arxiv_id = metadata.get("arxiv_id")
-            if arxiv_id and self._titles_match(title, metadata.get("title", "")):
-                pdf_url = f"https://arxiv.org/pdf/{arxiv_id}.pdf"
-                logger.detail(f"Title match found, PDF: {pdf_url}")
-                if await self._download_pdf(pdf_url, output_path):
-                    return RetrievalResult(
-                        doi=doi, title=title, status=RetrievalStatus.SUCCESS,
-                        source="arxiv", pdf_path=str(output_path),
-                    ), "downloaded"
+        # 3. Search by title using arXiv search API
+        if title:
+            logger.detail(f"Searching arXiv by title: {title[:50]}...")
+            # Use quoted search for better exact matching
+            quoted_title = f'"{title}"'
+            results = await client.search(quoted_title, limit=5)
+            for metadata in results:
+                found_arxiv_id = metadata.get("arxiv_id")
+                found_title = metadata.get("title", "")
+                if found_arxiv_id and self._titles_match(title, found_title, threshold=0.7):
+                    pdf_url = f"https://arxiv.org/pdf/{found_arxiv_id}.pdf"
+                    logger.detail(f"Title match found ('{found_title[:40]}...'), PDF: {pdf_url}")
+                    if await self._download_pdf(pdf_url, output_path):
+                        return RetrievalResult(
+                            doi=doi, title=title, status=RetrievalStatus.SUCCESS,
+                            source="arxiv", pdf_path=str(output_path),
+                        ), "downloaded via title search"
 
-        return None, "not an arXiv paper"
+        return None, "not found on arXiv"
 
     async def _try_pmc(self, client, doi, title, output_path, logger) -> tuple[RetrievalResult | None, str]:
         """Try PMC source."""
@@ -622,14 +696,34 @@ class PaperRetriever:
         result = None
 
         if doi:
-            logger.detail(f"Looking up paper by DOI: {doi}")
-            result = await client.get_paper_metadata(f"DOI:{doi}")
+            # Validate the DOI before using it
+            is_valid, rejection_reason = self._validate_found_doi(title, doi)
+            if not is_valid:
+                logger.detail(f"DOI validation failed: {rejection_reason}")
+                doi = None  # Don't use this DOI, fall through to title search
+            else:
+                logger.detail(f"Looking up paper by DOI: {doi}")
+                result = await client.get_paper_metadata(f"DOI:{doi}")
 
         if not result or not result.get("pdf_url"):
             logger.detail(f"Searching by title: {title[:50]}...")
             results = await client.search(title, limit=5)
             for r in results:
-                if r.get("pdf_url") and self._titles_match(title, r.get("title", "")):
+                found_doi = r.get("doi")
+                found_title = r.get("title", "")
+                
+                # Validate title match
+                if not self._titles_match(title, found_title):
+                    continue
+                    
+                # Validate DOI if present
+                if found_doi:
+                    is_valid, rejection_reason = self._validate_found_doi(title, found_doi, found_title, r.get("abstract", ""))
+                    if not is_valid:
+                        logger.detail(f"Skipping DOI {found_doi}: {rejection_reason}")
+                        continue
+                
+                if r.get("pdf_url"):
                     result = r
                     break
 
@@ -674,16 +768,35 @@ class PaperRetriever:
         result = None
 
         if doi:
-            logger.detail(f"Looking up work by DOI: {doi}")
-            result = await client.get_paper_metadata(doi)
+            # Validate the DOI before using it
+            is_valid, rejection_reason = self._validate_found_doi(title, doi)
+            if not is_valid:
+                logger.detail(f"DOI validation failed: {rejection_reason}")
+                doi = None  # Fall through to title search
+            else:
+                logger.detail(f"Looking up work by DOI: {doi}")
+                result = await client.get_paper_metadata(doi)
 
         if not result:
             logger.detail(f"Searching by title: {title[:50]}...")
             results = await client.search(title, limit=5)
             for r in results:
-                if self._titles_match(title, r.get("title", "")):
-                    result = r
-                    break
+                found_title = r.get("title", "")
+                found_doi = r.get("doi")
+                
+                # Validate title match
+                if not self._titles_match(title, found_title):
+                    continue
+                
+                # Validate DOI if present
+                if found_doi:
+                    is_valid, rejection_reason = self._validate_found_doi(title, found_doi, found_title)
+                    if not is_valid:
+                        logger.detail(f"Skipping result: {rejection_reason}")
+                        continue
+                
+                result = r
+                break
 
         if not result:
             return None, "work not found"
@@ -856,10 +969,25 @@ class PaperRetriever:
         normalized = re.sub(r"[^\w\s]", "", title.lower())
         return " ".join(normalized.split())
 
-    def _titles_match(self, title1: str, title2: str) -> bool:
-        """Check if two titles are similar enough."""
+    def _titles_match(self, title1: str, title2: str, threshold: float = 0.6) -> bool:
+        """Check if two titles are similar enough.
+        
+        Uses two methods:
+        1. Substring match: If one title contains the other (for truncated titles)
+        2. Word overlap: Jaccard similarity of words
+        
+        Args:
+            title1: First title (usually the query)
+            title2: Second title (usually the found result)
+            threshold: Minimum similarity score (0.0 to 1.0), default 0.6
+        """
         norm1 = self._normalize_title(title1)
         norm2 = self._normalize_title(title2)
+
+        # Check for substring match (handles truncated titles)
+        # e.g., "BERT Pre-training..." matches "BERT Pre-training... for Language Understanding"
+        if norm1 in norm2 or norm2 in norm1:
+            return True
 
         words1 = set(norm1.split())
         words2 = set(norm2.split())
@@ -867,9 +995,50 @@ class PaperRetriever:
         if not words1 or not words2:
             return False
 
+        # Check if all words from the shorter title are in the longer title
+        # This handles cases like partial titles
+        shorter, longer = (words1, words2) if len(words1) <= len(words2) else (words2, words1)
+        if shorter.issubset(longer):
+            return True
+
+        # Fall back to Jaccard similarity
         common = len(words1 & words2)
         total = len(words1 | words2)
-        return common / total >= 0.6 if total > 0 else False
+        return common / total >= threshold if total > 0 else False
+
+    def _validate_found_doi(self, expected_title: str, found_doi: str, found_title: str = "", found_abstract: str = "") -> tuple[bool, str | None]:
+        """Validate that a DOI found during search is appropriate.
+        
+        This catches cases like:
+        - Peer review DOIs instead of paper DOIs
+        - Book chapter DOIs when the original paper is elsewhere
+        - False positive title matches (e.g., "llama" animal vs "LLaMA" AI model)
+        
+        Args:
+            expected_title: The title we're looking for
+            found_doi: The DOI that was found
+            found_title: The title from the DOI metadata
+            found_abstract: Optional abstract text
+            
+        Returns:
+            Tuple of (is_valid, rejection_reason)
+        """
+        from ..validation import classify_doi, detect_title_context_mismatch
+        
+        # Check DOI classification
+        classification = classify_doi(found_doi)
+        if classification.get("type") in ("review", "book_chapter", "dataset"):
+            return False, f"Rejected: {classification.get('warning', 'problematic DOI type')}"
+        
+        # Check title context mismatch (catches "llama" animal vs "LLaMA" AI)
+        if found_title:
+            is_mismatch, reason = detect_title_context_mismatch(
+                expected_title, found_title, found_abstract
+            )
+            if is_mismatch:
+                return False, f"Rejected: {reason}"
+        
+        return True, None
 
     async def _download_pdf(self, url: str, output_path: Path) -> bool:
         """Download PDF from URL."""

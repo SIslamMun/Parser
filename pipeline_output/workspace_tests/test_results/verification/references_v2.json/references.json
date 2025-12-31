@@ -1,0 +1,250 @@
+[
+  {
+    "type": "github",
+    "value": "pytorch/pytorch",
+    "title": "pytorch",
+    "authors": "",
+    "year": "",
+    "url": "https://github.com/pytorch/pytorch"
+  },
+  {
+    "type": "github",
+    "value": "huggingface/transformers",
+    "title": "transformers",
+    "authors": "",
+    "year": "",
+    "url": "https://github.com/huggingface/transformers"
+  },
+  {
+    "type": "github",
+    "value": "microsoft/Swin-Transformer",
+    "title": "Swin-Transformer",
+    "authors": "",
+    "year": "",
+    "url": "https://github.com/microsoft/Swin-Transformer"
+  },
+  {
+    "type": "github",
+    "value": "meta-llama/llama3",
+    "title": "llama3",
+    "authors": "",
+    "year": "",
+    "url": "https://github.com/meta-llama/llama3"
+  },
+  {
+    "type": "arxiv",
+    "value": "2303.08774",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://arxiv.org/abs/2303.08774"
+  },
+  {
+    "type": "arxiv",
+    "value": "2407.21783",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://arxiv.org/abs/2407.21783"
+  },
+  {
+    "type": "arxiv",
+    "value": "2302.13971",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://arxiv.org/abs/2302.13971"
+  },
+  {
+    "type": "doi",
+    "value": "10.1038/s41586-020-2649-2",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://doi.org/10.1038/s41586-020-2649-2"
+  },
+  {
+    "type": "doi",
+    "value": "10.1038/nature14539",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://doi.org/10.1038/nature14539"
+  },
+  {
+    "type": "doi",
+    "value": "10.18653/v1/N19-1423",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://doi.org/10.18653/v1/N19-1423"
+  },
+  {
+    "type": "doi",
+    "value": "10.1109/ICCV48922.2021.00986",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://doi.org/10.1109/ICCV48922.2021.00986"
+  },
+  {
+    "type": "paper",
+    "value": "An Image is Worth 16x16 Words",
+    "title": "An Image is Worth 16x16 Words",
+    "authors": "Dosovitskiy et al.",
+    "year": "2021",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Array programming with NumPy",
+    "title": "Array programming with NumPy",
+    "authors": "Harris et al.",
+    "year": "2020",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Deep Learning",
+    "title": "Deep Learning",
+    "authors": "LeCun et al.",
+    "year": "2015",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Attention Is All You Need",
+    "title": "Attention Is All You Need",
+    "authors": "Vaswani et al.",
+    "year": "2017",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "BERT: Pre-training of Deep Bidirectional Transformers",
+    "title": "BERT: Pre-training of Deep Bidirectional Transformers",
+    "authors": "Devlin et al.",
+    "year": "2019",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale",
+    "title": "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale",
+    "authors": "Dosovitskiy et al.",
+    "year": "2021",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Swin Transformer: Hierarchical Vision Transformer using Shifted Windows",
+    "title": "Swin Transformer: Hierarchical Vision Transformer using Shifted Windows",
+    "authors": "Liu et al.",
+    "year": "2021",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "GPT-4 Technical Report",
+    "title": "GPT-4 Technical Report",
+    "authors": "OpenAI",
+    "year": "2023",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "The Llama 3 Herd of Models",
+    "title": "The Llama 3 Herd of Models",
+    "authors": "Dubey et al.",
+    "year": "2024",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "LLaMA: Open and Efficient Foundation Language Models",
+    "title": "LLaMA: Open and Efficient Foundation Language Models",
+    "authors": "Touvron et al.",
+    "year": "2024",
+    "url": null
+  },
+  {
+    "type": "pdf",
+    "value": "https://openaccess.thecvf.com/content/ICCV2021/papers/Liu_Swin_Transformer_Hierarchical_Vision_Transformer_Using_Shifted_Windows_ICCV_2021_paper.pdf",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://openaccess.thecvf.com/content/ICCV2021/papers/Liu_Swin_Transformer_Hierarchical_Vision_Transformer_Using_Shifted_Windows_ICCV_2021_paper.pdf"
+  },
+  {
+    "type": "youtube",
+    "value": "kCc8FmEb1nY",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://youtube.com/watch?v=kCc8FmEb1nY"
+  },
+  {
+    "type": "youtube",
+    "value": "iDulhoQ2pro",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://youtube.com/watch?v=iDulhoQ2pro"
+  },
+  {
+    "type": "youtube",
+    "value": "wjZofJX0v4M",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://youtube.com/watch?v=wjZofJX0v4M"
+  },
+  {
+    "type": "website",
+    "value": "https://en.wikipedia.org/wiki/Transformer_(machine_learning_model)",
+    "title": "en.wikipedia.org",
+    "authors": "",
+    "year": "",
+    "url": "https://en.wikipedia.org/wiki/Transformer_(machine_learning_model)"
+  },
+  {
+    "type": "website",
+    "value": "https://jalammar.github.io/illustrated-transformer/",
+    "title": "jalammar.github.io",
+    "authors": "",
+    "year": "",
+    "url": "https://jalammar.github.io/illustrated-transformer/"
+  },
+  {
+    "type": "website",
+    "value": "http://nlp.seas.harvard.edu/2018/04/03/attention.html",
+    "title": "nlp.seas.harvard.edu",
+    "authors": "",
+    "year": "",
+    "url": "http://nlp.seas.harvard.edu/2018/04/03/attention.html"
+  },
+  {
+    "type": "website",
+    "value": "https://towardsdatascience.com/transformers-from-nlp-to-computer-vision-4f237386610c/",
+    "title": "towardsdatascience.com",
+    "authors": "",
+    "year": "",
+    "url": "https://towardsdatascience.com/transformers-from-nlp-to-computer-vision-4f237386610c/"
+  },
+  {
+    "type": "website",
+    "value": "https://huggingface.co/docs/transformers",
+    "title": "huggingface.co",
+    "authors": "",
+    "year": "",
+    "url": "https://huggingface.co/docs/transformers"
+  },
+  {
+    "type": "website",
+    "value": "https://pytorch.org/tutorials/beginner/transformer_tutorial.html",
+    "title": "pytorch.org",
+    "authors": "",
+    "year": "",
+    "url": "https://pytorch.org/tutorials/beginner/transformer_tutorial.html"
+  }
+]

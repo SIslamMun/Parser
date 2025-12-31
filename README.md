@@ -441,6 +441,76 @@ You can enable/disable sources and change priorities in `config.yaml`.
 
 ---
 
+## Retrieval Order & Smart Resolution
+
+### How Papers Are Found
+
+The retriever prioritizes **peer-reviewed papers** over preprints:
+
+#### 1. Metadata Resolution (First Step)
+
+When you provide a DOI or title, the system resolves metadata in this order:
+
+| Priority | Source | Type | Why |
+|----------|--------|------|-----|
+| 1 | **CrossRef** | Peer-reviewed | Most authoritative for published papers |
+| 2 | **Semantic Scholar** | Both | Good coverage, supports DOI/arXiv |
+| 3 | **OpenAlex** | Both | Broad coverage fallback |
+| 4 | **arXiv** | Preprints | Fallback when peer-reviewed not found |
+
+**Why peer-reviewed first?** Published papers in journals have undergone peer review and are more authoritative than preprints.
+
+#### 2. Per-Source Download Order
+
+Each source uses the most reliable method first:
+
+**arXiv:**
+1. **arXiv ID** (from DOI like `10.48550/arXiv.1706.03762`)
+2. **arXiv URL** (if present in input)
+3. **Title search** (with 70% similarity threshold)
+
+**Sci-Hub / LibGen:**
+1. **Title first** (configurable - better hit rate for some papers)
+2. **DOI fallback**
+
+Configure in `config.yaml`:
+```yaml
+download:
+  lookup_priority:
+    - title  # Try title first
+    - doi    # Then DOI if title fails
+```
+
+### DOI Validation
+
+The system automatically filters problematic DOIs:
+
+| DOI Type | Pattern | Publisher | Action |
+|----------|---------|-----------|--------|
+| **Peer Review** | `10.14293/...sor-...` | ScienceOpen | Skipped |
+| **Peer Review** | `10.3410/f....` | Faculty Opinions | Skipped |
+| **Book Chapter** | `10.1007/978-...` | Springer | Skipped |
+| **Book Chapter** | `10.1016/b978-...` | Elsevier | Skipped |
+| **Book Chapter** | `10.1201/978...` | Taylor & Francis | Skipped |
+| **Book Chapter** | `10.1002/978...` | Wiley | Skipped |
+| **Book Chapter** | `10.1017/978...` | Cambridge UP | Skipped |
+| **Book Chapter** | `10.1093/...978...` | Oxford UP | Skipped |
+| **Dataset** | `10.5281/zenodo...` | Zenodo | Skipped |
+
+### Title Mismatch Detection
+
+Catches false-positive matches for confusing terms:
+
+| Query | False Match | Detection |
+|-------|-------------|-----------|
+| "LLaMA 3" | Book about llama animals | ✓ Detected ("camelid", "animal") |
+| "BERT: Pre-training..." | "Bert the Turtle" | ✓ Detected (no AI context) |
+| "Falcon LLM" | Falcon bird paper | ✓ Detected ("raptor", "ornithology") |
+
+**How it works:** The system checks for AI-related keywords (e.g., "language model", "transformer", "neural") vs false context (e.g., "animal", "camelid", "bird").
+
+---
+
 ## University/Institutional Access
 
 If you have a university subscription, you can download papers from IEEE, ACM, Elsevier, and other publishers.

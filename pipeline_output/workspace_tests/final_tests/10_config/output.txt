@@ -1,0 +1,10 @@
+Usage: parser config [OPTIONS] COMMAND [ARGS]...
+
+  Manage configuration sync across machines.
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  pull  Pull config from a private GitHub gist.
+  push  Push config to a private GitHub gist.

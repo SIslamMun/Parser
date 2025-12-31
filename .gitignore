@@ -74,7 +74,7 @@ config.yaml
 downloads/
 output/
 test_output/
-pipeline_output*/
+# pipeline_output*/
 
 # Temporary files
 *.tmp

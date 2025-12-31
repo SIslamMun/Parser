@@ -1,0 +1,8 @@
+{
+  "query": "Compare different RAG architectures and their implementations. Analyze the evolution from basic RAG to Self-RAG and advanced techniques. Include analysis of popular frameworks like LangChain and LlamaIndex.",
+  "status": "completed",
+  "interaction_id": "v1_ChdDaUZVYWMyeENKdXlqTWNQcVBMM2tBYxIXQ2lGVWFjMnhDSnV5ak1jUHFQTDNrQWM",
+  "citations": [],
+  "duration_seconds": 508.6959881782532,
+  "error": null
+}

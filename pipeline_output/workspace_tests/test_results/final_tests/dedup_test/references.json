@@ -1,0 +1,26 @@
+[
+  {
+    "type": "github",
+    "value": "pytorch/pytorch",
+    "title": "pytorch",
+    "authors": "",
+    "year": "",
+    "url": "https://github.com/pytorch/pytorch"
+  },
+  {
+    "type": "arxiv",
+    "value": "2303.08774",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://arxiv.org/abs/2303.08774"
+  },
+  {
+    "type": "doi",
+    "value": "10.1038/nature14539",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://doi.org/10.1038/nature14539"
+  }
+]

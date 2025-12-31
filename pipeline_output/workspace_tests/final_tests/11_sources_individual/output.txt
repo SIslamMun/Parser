@@ -1,0 +1,16 @@
+=== Testing Individual Sources ===
+✓ Downloaded: final_tests/11_sources_individual/Lewis_2020_Retrieval-Augmented_Generation_for_Knowledge-Inten.pdf
+  Source: arxiv
+  Title: Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks
+✓ Downloaded: final_tests/11_sources_individual/Kucsko_2013_Nanometre-scale_thermometry_in_a_living_cell.pdf
+  Source: openalex
+  Title: Nanometre-scale thermometry in a living cell
+✓ Downloaded: final_tests/11_sources_individual/Conneau_2020_Unsupervised_Cross-lingual_Representation_Learning.pdf
+  Source: unpaywall
+  Title: Unsupervised Cross-lingual Representation Learning at Scale
+✗ Failed: PDF not found in any source
+✓ Downloaded: final_tests/11_sources_individual/Sharma_2018_Conceptual_Captions_A_Cleaned_Hypernymed_Image_Alt.pdf
+  Source: unpaywall
+  Title: Conceptual Captions: A Cleaned, Hypernymed, Image Alt-text Dataset For Automatic Image Captioning
+✗ Failed: PDF not found in any source
+✗ Failed: PDF not found in any source

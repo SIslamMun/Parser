@@ -1,0 +1,2 @@
+config.yaml exists. Overwrite? [y/N]: Created config.yaml
+Please edit the file and set your email address.

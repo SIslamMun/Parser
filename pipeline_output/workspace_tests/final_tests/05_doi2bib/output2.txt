@@ -1,0 +1,10 @@
+@article{kucsko2013nanometrescale,
+  title = {Nanometre-scale thermometry in a living cell},
+  author = {G. Kucsko and P. Maurer and N. Yao and Michael Kubo and Hyun Ji Noh and P. Lo and Hongkun Park and M. Lukin},
+  year = {2013},
+  journal = {Nature},
+  doi = {10.1038/nature12373},
+  eprint = {1304.1068},
+  archiveprefix = {arXiv},
+  url = {https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4221854}
+}

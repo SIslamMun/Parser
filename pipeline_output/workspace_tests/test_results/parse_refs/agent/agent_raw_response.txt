@@ -1,0 +1,272 @@
+[
+  {
+    "type": "paper",
+    "value": "Attention Is All You Need",
+    "title": "Attention Is All You Need",
+    "authors": "Vaswani et al.",
+    "year": "2017",
+    "url": "https://papers.nips.cc/paper/2017/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html",
+    "context": "The publication of 'Attention Is All You Need' by Vaswani et al. in 2017 proposed a radical departure from RNNs"
+  },
+  {
+    "type": "website",
+    "value": "https://papers.nips.cc/paper/2017/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html",
+    "title": "Attention Is All You Need",
+    "authors": "Vaswani et al.",
+    "year": "2017",
+    "url": "https://papers.nips.cc/paper/2017/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html",
+    "context": "NeurIPS 2017 conference paper"
+  },
+  {
+    "type": "paper",
+    "value": "BERT: Pre-training of Deep Bidirectional Transformers",
+    "title": "BERT: Pre-training of Deep Bidirectional Transformers",
+    "authors": "Devlin et al.",
+    "year": "2019",
+    "url": "https://aclanthology.org/N19-1423",
+    "context": "Introduced by Devlin et al. (2019), BERT utilizes the encoder stack of the Transformer"
+  },
+  {
+    "type": "doi",
+    "value": "10.18653/v1/N19-1423",
+    "title": "BERT: Pre-training of Deep Bidirectional Transformers",
+    "authors": "Devlin et al.",
+    "year": "2019",
+    "url": "https://doi.org/10.18653/v1/N19-1423",
+    "context": "NAACL 2019 conference paper DOI"
+  },
+  {
+    "type": "website",
+    "value": "https://aclanthology.org/N19-1423",
+    "title": "BERT: Pre-training of Deep Bidirectional Transformers",
+    "authors": "Devlin et al.",
+    "year": "2019",
+    "url": "https://aclanthology.org/N19-1423",
+    "context": "ACL Anthology URL for BERT paper"
+  },
+  {
+    "type": "paper",
+    "value": "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale",
+    "title": "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale",
+    "authors": "Dosovitskiy et al.",
+    "year": "2021",
+    "url": "https://openreview.net/forum?id=YicbFdNTTy",
+    "context": "Vision Transformer (ViT) demonstrated that a pure Transformer applied directly to sequences of image patches"
+  },
+  {
+    "type": "website",
+    "value": "https://openreview.net/forum?id=YicbFdNTTy",
+    "title": "An Image is Worth 16x16 Words",
+    "authors": "Dosovitskiy et al.",
+    "year": "2021",
+    "url": "https://openreview.net/forum?id=YicbFdNTTy",
+    "context": "ICLR 2021 OpenReview URL"
+  },
+  {
+    "type": "paper",
+    "value": "Swin Transformer: Hierarchical Vision Transformer using Shifted Windows",
+    "title": "Swin Transformer: Hierarchical Vision Transformer using Shifted Windows",
+    "authors": "Liu et al.",
+    "year": "2021",
+    "url": "https://openaccess.thecvf.com/content/ICCV2021/papers/Liu_Swin_Transformer_Hierarchical_Vision_Transformer_Using_Shifted_Windows_ICCV_2021_paper.pdf",
+    "context": "The Swin Transformer (Liu et al., ICCV 2021) introduced a hierarchical architecture with shifted windows"
+  },
+  {
+    "type": "doi",
+    "value": "10.1109/ICCV48922.2021.00986",
+    "title": "Swin Transformer: Hierarchical Vision Transformer using Shifted Windows",
+    "authors": "Liu et al.",
+    "year": "2021",
+    "url": "https://doi.org/10.1109/ICCV48922.2021.00986",
+    "context": "ICCV 2021 conference paper DOI"
+  },
+  {
+    "type": "pdf",
+    "value": "https://openaccess.thecvf.com/content/ICCV2021/papers/Liu_Swin_Transformer_Hierarchical_Vision_Transformer_Using_Shifted_Windows_ICCV_2021_paper.pdf",
+    "title": "Swin Transformer: Hierarchical Vision Transformer using Shifted Windows",
+    "authors": "Liu et al.",
+    "year": "2021",
+    "url": "https://openaccess.thecvf.com/content/ICCV2021/papers/Liu_Swin_Transformer_Hierarchical_Vision_Transformer_Using_Shifted_Windows_ICCV_2021_paper.pdf",
+    "context": "Direct PDF link to Swin Transformer paper"
+  },
+  {
+    "type": "arxiv",
+    "value": "2303.08774",
+    "title": "GPT-4 Technical Report",
+    "authors": "OpenAI",
+    "year": "2023",
+    "url": "https://arxiv.org/abs/2303.08774",
+    "context": "Released in 2023, GPT-4 is a large-scale, multimodal model"
+  },
+  {
+    "type": "arxiv",
+    "value": "2407.21783",
+    "title": "The Llama 3 Herd of Models",
+    "authors": "Dubey et al.",
+    "year": "2024",
+    "url": "https://arxiv.org/abs/2407.21783",
+    "context": "Meta's Llama (Large Language Model Meta AI) series technical report"
+  },
+  {
+    "type": "arxiv",
+    "value": "2302.13971",
+    "title": "LLaMA: Open and Efficient Foundation Language Models",
+    "authors": "Touvron et al.",
+    "year": "2023",
+    "url": "https://arxiv.org/abs/2302.13971",
+    "context": "Original LLaMA model paper"
+  },
+  {
+    "type": "website",
+    "value": "https://jalammar.github.io/illustrated-transformer/",
+    "title": "The Illustrated Transformer",
+    "authors": "Jay Alammar",
+    "year": "2018",
+    "url": "https://jalammar.github.io/illustrated-transformer/",
+    "context": "Widely regarded as the best visual explanation of the architecture"
+  },
+  {
+    "type": "website",
+    "value": "http://nlp.seas.harvard.edu/2018/04/03/attention.html",
+    "title": "The Annotated Transformer",
+    "authors": "Harvard NLP",
+    "year": "2018",
+    "url": "http://nlp.seas.harvard.edu/2018/04/03/attention.html",
+    "context": "A line-by-line implementation of the original paper in PyTorch"
+  },
+  {
+    "type": "website",
+    "value": "https://towardsdatascience.com/transformers-from-nlp-to-computer-vision-4f237386610c/",
+    "title": "Transformers from NLP to Computer Vision",
+    "authors": "",
+    "year": "2024",
+    "url": "https://towardsdatascience.com/transformers-from-nlp-to-computer-vision-4f237386610c/",
+    "context": "Towards Data Science Medium article"
+  },
+  {
+    "type": "github",
+    "value": "pytorch/pytorch",
+    "title": "PyTorch",
+    "authors": "",
+    "year": "",
+    "url": "https://github.com/pytorch/pytorch",
+    "context": "Deep learning framework with dynamic computational graphs and GPU acceleration"
+  },
+  {
+    "type": "github",
+    "value": "huggingface/transformers",
+    "title": "Hugging Face Transformers",
+    "authors": "",
+    "year": "",
+    "url": "https://github.com/huggingface/transformers",
+    "context": "Hugging Face Transformers library for state-of-the-art NLP, Computer Vision, and Audio"
+  },
+  {
+    "type": "github",
+    "value": "microsoft/Swin-Transformer",
+    "title": "Swin-Transformer",
+    "authors": "",
+    "year": "",
+    "url": "https://github.com/microsoft/Swin-Transformer",
+    "context": "Official Microsoft implementation of Swin Transformer"
+  },
+  {
+    "type": "website",
+    "value": "https://huggingface.co/docs/transformers",
+    "title": "Transformers Documentation",
+    "authors": "Hugging Face",
+    "year": "",
+    "url": "https://huggingface.co/docs/transformers",
+    "context": "Hugging Face has democratized access to these models, providing a unified API"
+  },
+  {
+    "type": "website",
+    "value": "https://pytorch.org/tutorials/beginner/transformer_tutorial.html",
+    "title": "PyTorch Transformer Tutorial",
+    "authors": "",
+    "year": "",
+    "url": "https://pytorch.org/tutorials/beginner/transformer_tutorial.html",
+    "context": "PyTorch provides native support for Transformers"
+  },
+  {
+    "type": "website",
+    "value": "https://github.com/meta-llama/llama3/blob/main/MODEL_CARD.md",
+    "title": "Llama 3 Model Card",
+    "authors": "Meta AI",
+    "year": "",
+    "url": "https://github.com/meta-llama/llama3/blob/main/MODEL_CARD.md",
+    "context": "Meta's Llama 3 model documentation"
+  },
+  {
+    "type": "youtube",
+    "value": "kCc8FmEb1nY",
+    "title": "Let's build GPT: from scratch, in code, spelled out",
+    "authors": "Andrej Karpathy",
+    "year": "2023",
+    "url": "https://www.youtube.com/watch?v=kCc8FmEb1nY",
+    "context": "A definitive guide that builds a GPT-style model from empty file to working implementation in PyTorch"
+  },
+  {
+    "type": "youtube",
+    "value": "iDulhoQ2pro",
+    "title": "Attention is All You Need - Paper Explained",
+    "authors": "Yannic Kilcher",
+    "year": "2020",
+    "url": "https://www.youtube.com/watch?v=iDulhoQ2pro",
+    "context": "A detailed paper review explaining the original Transformer paper"
+  },
+  {
+    "type": "youtube",
+    "value": "wjZofJX0v4M",
+    "title": "Transformers, the tech behind LLMs",
+    "authors": "3Blue1Brown",
+    "year": "2024",
+    "url": "https://www.youtube.com/watch?v=wjZofJX0v4M",
+    "context": "Provides a visual and mathematical intuition for how Transformers and Large Language Models function"
+  },
+  {
+    "type": "website",
+    "value": "https://en.wikipedia.org/wiki/Transformer_(machine_learning_model)",
+    "title": "Transformer (machine learning model)",
+    "authors": "",
+    "year": "",
+    "url": "https://en.wikipedia.org/wiki/Transformer_(machine_learning_model)",
+    "context": "Wikipedia article on Transformer architecture"
+  },
+  {
+    "type": "paper",
+    "value": "Array programming with NumPy",
+    "title": "Array programming with NumPy",
+    "authors": "Harris et al.",
+    "year": "2020",
+    "url": "https://doi.org/10.1038/s41586-020-2649-2",
+    "context": "Nature journal publication"
+  },
+  {
+    "type": "doi",
+    "value": "10.1038/s41586-020-2649-2",
+    "title": "Array programming with NumPy",
+    "authors": "Harris et al.",
+    "year": "2020",
+    "url": "https://doi.org/10.1038/s41586-020-2649-2",
+    "context": "DOI for NumPy Nature paper"
+  },
+  {
+    "type": "paper",
+    "value": "Deep Learning",
+    "title": "Deep Learning",
+    "authors": "LeCun et al.",
+    "year": "2015",
+    "url": "https://doi.org/10.1038/nature14539",
+    "context": "Nature journal publication on deep learning fundamentals"
+  },
+  {
+    "type": "doi",
+    "value": "10.1038/nature14539",
+    "title": "Deep Learning",
+    "authors": "LeCun et al.",
+    "year": "2015",
+    "url": "https://doi.org/10.1038/nature14539",
+    "context": "DOI for Deep Learning Nature paper"
+  }
+]

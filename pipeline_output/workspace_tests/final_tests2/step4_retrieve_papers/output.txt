@@ -1,0 +1,13 @@
+Found 17 papers to retrieve:
+  - 17 with title/DOI (metadata search)
+  - 0 direct PDF URLs
+
+Results:
+  ✓ Downloaded: 13
+  ⊘ Skipped: 1
+  ✗ Failed: 3
+
+Failed papers:
+  - 10.14293/s2199-1006.1.sor-uncat.a7759461.v1.raugfi
+  - 10.1007/978-3-031-84300-6_13
+  - 10.1016/b978-1-4377-2352-6.00004-3

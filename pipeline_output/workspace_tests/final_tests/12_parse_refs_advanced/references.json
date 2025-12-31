@@ -1,0 +1,146 @@
+[
+  {
+    "type": "arxiv",
+    "value": "1409.0473",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://arxiv.org/abs/1409.0473"
+  },
+  {
+    "type": "arxiv",
+    "value": "2009.06732",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://arxiv.org/abs/2009.06732"
+  },
+  {
+    "type": "doi",
+    "value": "10.5555/3295222.3295349",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://doi.org/10.5555/3295222.3295349"
+  },
+  {
+    "type": "doi",
+    "value": "10.18653/v1/N19-1423",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://doi.org/10.18653/v1/N19-1423"
+  },
+  {
+    "type": "doi",
+    "value": "10.1145/3530811",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://doi.org/10.1145/3530811"
+  },
+  {
+    "type": "doi",
+    "value": "10.1162/neco.1997.9.8.1735",
+    "title": "",
+    "authors": "",
+    "year": "",
+    "url": "https://doi.org/10.1162/neco.1997.9.8.1735"
+  },
+  {
+    "type": "paper",
+    "value": "Attention Is All You Need",
+    "title": "Attention Is All You Need",
+    "authors": "Vaswani et al.",
+    "year": "2017",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+    "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+    "authors": "Devlin et al.",
+    "year": "2019",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Efficient Transformers: A Survey",
+    "title": "Efficient Transformers: A Survey",
+    "authors": "Tay et al.",
+    "year": "2022",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Neural Machine Translation by Jointly Learning to Align and Translate",
+    "title": "Neural Machine Translation by Jointly Learning to Align and Translate",
+    "authors": "Bahdanau et al.",
+    "year": "2015",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Long Short-Term Memory",
+    "title": "Long Short-Term Memory",
+    "authors": "Hochreiter & Schmidhuber",
+    "year": "1997",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Language Models are Few-Shot Learners",
+    "title": "Language Models are Few-Shot Learners",
+    "authors": "Brown et al.",
+    "year": "2020",
+    "url": null
+  },
+  {
+    "type": "paper",
+    "value": "Multi-Head Attention Mechanism",
+    "title": "Multi-Head Attention Mechanism",
+    "authors": "GeeksforGeeks",
+    "year": "2025",
+    "url": null
+  },
+  {
+    "type": "website",
+    "value": "https://jalammar.github.io/illustrated-transformer/",
+    "title": "jalammar.github.io",
+    "authors": "",
+    "year": "",
+    "url": "https://jalammar.github.io/illustrated-transformer/"
+  },
+  {
+    "type": "website",
+    "value": "https://kazemnejad.com/blog/transformer_architecture_positional_encoding/",
+    "title": "kazemnejad.com",
+    "authors": "",
+    "year": "",
+    "url": "https://kazemnejad.com/blog/transformer_architecture_positional_encoding/"
+  },
+  {
+    "type": "website",
+    "value": "https://medium.com/thedeephub/positional-encoding-explained-a-deep-dive-into-transformer-pe-65cfe8cfe10b",
+    "title": "medium.com",
+    "authors": "",
+    "year": "",
+    "url": "https://medium.com/thedeephub/positional-encoding-explained-a-deep-dive-into-transformer-pe-65cfe8cfe10b"
+  },
+  {
+    "type": "website",
+    "value": "https://blog.stackademic.com/how-rnns-were-replaced-by-transformers-and-why-8b60ac729b80",
+    "title": "blog.stackademic.com",
+    "authors": "",
+    "year": "",
+    "url": "https://blog.stackademic.com/how-rnns-were-replaced-by-transformers-and-why-8b60ac729b80"
+  },
+  {
+    "type": "website",
+    "value": "https://www.geeksforgeeks.org/nlp/multi-head-attention-mechanism/",
+    "title": "www.geeksforgeeks.org",
+    "authors": "",
+    "year": "",
+    "url": "https://www.geeksforgeeks.org/nlp/multi-head-attention-mechanism/"
+  }
+]

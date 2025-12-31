@@ -198,7 +198,9 @@ class ResearchParser:
         return refs
 
     def _extract_doi(self, text: str) -> list[ParsedReference]:
-        """Extract DOIs."""
+        """Extract DOIs, with classification for problematic types."""
+        from .validation import classify_doi
+        
         refs = []
         seen = set()
 
@@ -216,11 +218,22 @@ class ResearchParser:
                 doi = doi.strip()
                 if doi not in seen and doi:
                     seen.add(doi)
+                    
+                    # Classify the DOI to detect potential issues
+                    classification = classify_doi(doi)
+                    metadata = {}
+                    if classification.get("warning"):
+                        metadata["doi_warning"] = classification["warning"]
+                        metadata["doi_type"] = classification["type"]
+                        metadata["publisher"] = classification.get("publisher")
+                        metadata["is_paywalled"] = classification.get("is_paywalled", False)
+                    
                     refs.append(ParsedReference(
                         type=ReferenceType.DOI,
                         value=doi,
                         url=f"https://doi.org/{doi}",
                         context=self._get_context(text, match),
+                        metadata=metadata,
                     ))
 
         return refs

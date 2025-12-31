@@ -1,0 +1,6 @@
+Found 2 papers to retrieve:
+  - 2 with title/DOI (metadata search)
+  - 0 direct PDF URLs
+
+Results:
+  ✓ Downloaded: 2

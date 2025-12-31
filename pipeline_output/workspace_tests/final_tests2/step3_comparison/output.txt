@@ -1,0 +1,2 @@
+=== STEP 3: Comparison (Skipped - No Agent Results) ===
+Comparison skipped because agent parsing failed (no API key).

@@ -1,0 +1,20 @@
+Available sources:
+
+  1. unpaywall: enabled
+  2. arxiv: enabled
+  3. pmc: enabled
+  4. biorxiv: enabled
+  5. semantic_scholar: enabled
+  6. acl_anthology: enabled
+  7. openalex: enabled
+  8. frontiers: enabled
+  9. institutional: enabled
+  10. scihub: enabled
+  11. libgen: enabled
+  12. web_search: disabled
+
+Institutional access:
+  Mode: EZProxy
+  Proxy URL: https://ezproxy.gl.iit.edu/login?url=
+
+Unofficial sources enabled

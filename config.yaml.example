@@ -54,21 +54,27 @@ sources:
   semantic_scholar:
     enabled: true
     priority: 5
-  openalex:
+  acl_anthology:
     enabled: true
     priority: 6
+  openalex:
+    enabled: true
+    priority: 7
+  frontiers:
+    enabled: true
+    priority: 8
   institutional:
     enabled: false              # Enable when using university VPN/EZProxy
-    priority: 7
-  scihub:
-    enabled: false              # ⚠️ Legal gray area - use at your own risk
-    priority: 8
-  libgen:
-    enabled: false              # ⚠️ Legal gray area - use at your own risk
     priority: 9
   web_search:
     enabled: false
     priority: 10
+  scihub:
+    enabled: false              # ⚠️ Legal gray area - use at your own risk
+    priority: 11
+  libgen:
+    enabled: false              # ⚠️ Legal gray area - use at your own risk
+    priority: 12
 
 # Unofficial sources (require explicit opt-in)
 # ⚠️ WARNING: Use at your own risk. May be illegal in your jurisdiction.
@@ -88,6 +94,30 @@ download:
   max_title_length: 50
   create_subfolders: false
   skip_existing: true
+  # Lookup priority for sources that support both title and DOI search
+  # Options: ["title", "doi"] or ["doi", "title"]
+  # Default is title-first as it tends to have better hit rate for some papers
+  lookup_priority:
+    - title
+    - doi
+
+# Metadata Resolution Order
+# Controls which sources are tried first when resolving paper metadata
+# Peer-reviewed sources (CrossRef) are prioritized over preprints (arXiv)
+metadata:
+  # Order of sources for metadata resolution
+  # 1. crossref - peer-reviewed papers (most authoritative)
+  # 2. semantic_scholar - good coverage, supports DOI/arXiv
+  # 3. openalex - broad coverage
+  # 4. arxiv - preprints (fallback)
+  resolution_order:
+    - crossref
+    - semantic_scholar
+    - openalex
+    - arxiv
+  # Title similarity threshold for matching (0.0 to 1.0)
+  # Higher = stricter matching, fewer false positives
+  title_match_threshold: 0.8
 
 # Rate limiting (seconds between requests)
 # Respects API guidelines - do not reduce below these values

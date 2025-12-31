@@ -1,0 +1,274 @@
+[
+  {
+    "type": "github",
+    "value": "langchain-ai/langchain",
+    "title": "langchain",
+    "authors": "",
+    "year": "",
+    "url": "https://github.com/langchain-ai/langchain"
+  },
+  {
+    "type": "github",
+    "value": "langchain-ai/langgraph",
+    "title": "langgraph",
+    "authors": "",
+    "year": "",
+    "url": "https://github.com/langchain-ai/langgraph"
+  },
+  {
+    "type": "website",
+    "value": "https://datasciencedojo.com/blog/what-is-langchain/",
+    "title": "datasciencedojo.com",
+    "authors": "",
+    "year": "",
+    "url": "https://datasciencedojo.com/blog/what-is-langchain/"
+  },
+  {
+    "type": "website",
+    "value": "https://medium.com/@koki_noda/langchain-use-cases-9f2c5044ff03",
+    "title": "medium.com",
+    "authors": "",
+    "year": "",
+    "url": "https://medium.com/@koki_noda/langchain-use-cases-9f2c5044ff03"
+  },
+  {
+    "type": "website",
+    "value": "https://blog.langchain.com/langchain-expression-language/",
+    "title": "blog.langchain.com",
+    "authors": "",
+    "year": "",
+    "url": "https://blog.langchain.com/langchain-expression-language/"
+  },
+  {
+    "type": "website",
+    "value": "https://focused.io/lab/introduction-to-langchain-expression-language-a-developers-guide",
+    "title": "focused.io",
+    "authors": "",
+    "year": "",
+    "url": "https://focused.io/lab/introduction-to-langchain-expression-language-a-developers-guide"
+  },
+  {
+    "type": "website",
+    "value": "https://www.simplilearn.com/langchain-vs-langgraph-article",
+    "title": "www.simplilearn.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.simplilearn.com/langchain-vs-langgraph-article"
+  },
+  {
+    "type": "website",
+    "value": "https://www.gitselect.com/post/what-is-langchain-langsmith-and-langserve",
+    "title": "www.gitselect.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.gitselect.com/post/what-is-langchain-langsmith-and-langserve"
+  },
+  {
+    "type": "website",
+    "value": "https://minimaxir.com/2023/07/langchain-problem/",
+    "title": "minimaxir.com",
+    "authors": "",
+    "year": "",
+    "url": "https://minimaxir.com/2023/07/langchain-problem/"
+  },
+  {
+    "type": "website",
+    "value": "https://shashankguda.medium.com/challenges-criticisms-of-langchain-b26afcef94e7",
+    "title": "shashankguda.medium.com",
+    "authors": "",
+    "year": "",
+    "url": "https://shashankguda.medium.com/challenges-criticisms-of-langchain-b26afcef94e7"
+  },
+  {
+    "type": "website",
+    "value": "https://www.digitalocean.com/community/conceptual-articles/langchain-framework-explained",
+    "title": "www.digitalocean.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.digitalocean.com/community/conceptual-articles/langchain-framework-explained"
+  },
+  {
+    "type": "website",
+    "value": "https://www.ibm.com/think/topics/langchain",
+    "title": "www.ibm.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.ibm.com/think/topics/langchain"
+  },
+  {
+    "type": "website",
+    "value": "https://blog.langchain.com/announcing-langchain-v0-3/",
+    "title": "blog.langchain.com",
+    "authors": "",
+    "year": "",
+    "url": "https://blog.langchain.com/announcing-langchain-v0-3/"
+  },
+  {
+    "type": "website",
+    "value": "https://changelog.langchain.com/announcements/langchain-v0-3-migrating-to-pydantic-2-for-python-peer-dependencies-for-javascript",
+    "title": "changelog.langchain.com",
+    "authors": "",
+    "year": "",
+    "url": "https://changelog.langchain.com/announcements/langchain-v0-3-migrating-to-pydantic-2-for-python-peer-dependencies-for-javascript"
+  },
+  {
+    "type": "website",
+    "value": "https://dev.to/jamesbmour/mastering-langchain-part-1-introduction-to-langchain-and-its-key-components-4jji",
+    "title": "dev.to",
+    "authors": "",
+    "year": "",
+    "url": "https://dev.to/jamesbmour/mastering-langchain-part-1-introduction-to-langchain-and-its-key-components-4jji"
+  },
+  {
+    "type": "website",
+    "value": "https://www.ksolves.com/blog/artificial-intelligence/key-concepts-of-langchain",
+    "title": "www.ksolves.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.ksolves.com/blog/artificial-intelligence/key-concepts-of-langchain"
+  },
+  {
+    "type": "website",
+    "value": "https://www.datacamp.com/blog/langchain-vs-llamaindex",
+    "title": "www.datacamp.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.datacamp.com/blog/langchain-vs-llamaindex"
+  },
+  {
+    "type": "website",
+    "value": "https://milvus.io/ai-quick-reference/what-are-some-advanced-use-cases-of-langchain",
+    "title": "milvus.io",
+    "authors": "",
+    "year": "",
+    "url": "https://milvus.io/ai-quick-reference/what-are-some-advanced-use-cases-of-langchain"
+  },
+  {
+    "type": "website",
+    "value": "https://www.decube.io/post/langchain-intro",
+    "title": "www.decube.io",
+    "authors": "",
+    "year": "",
+    "url": "https://www.decube.io/post/langchain-intro"
+  },
+  {
+    "type": "website",
+    "value": "https://medium.com/@arpit.singhal57/mastering-langchain-a-comprehensive-guide-to-key-concepts-and-components-b97ffdca4a71",
+    "title": "medium.com",
+    "authors": "",
+    "year": "",
+    "url": "https://medium.com/@arpit.singhal57/mastering-langchain-a-comprehensive-guide-to-key-concepts-and-components-b97ffdca4a71"
+  },
+  {
+    "type": "website",
+    "value": "https://docs.langchain.com/oss/javascript/langgraph/overview",
+    "title": "docs.langchain.com",
+    "authors": "",
+    "year": "",
+    "url": "https://docs.langchain.com/oss/javascript/langgraph/overview"
+  },
+  {
+    "type": "website",
+    "value": "https://www.datacamp.com/tutorial/langgraph-tutorial",
+    "title": "www.datacamp.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.datacamp.com/tutorial/langgraph-tutorial"
+  },
+  {
+    "type": "website",
+    "value": "https://milvus.io/ai-quick-reference/what-are-the-limitations-of-langchain",
+    "title": "milvus.io",
+    "authors": "",
+    "year": "",
+    "url": "https://milvus.io/ai-quick-reference/what-are-the-limitations-of-langchain"
+  },
+  {
+    "type": "website",
+    "value": "https://www.chatbees.ai/blog/langserve",
+    "title": "www.chatbees.ai",
+    "authors": "",
+    "year": "",
+    "url": "https://www.chatbees.ai/blog/langserve"
+  },
+  {
+    "type": "website",
+    "value": "https://python.langchain.com/docs/langserve",
+    "title": "python.langchain.com",
+    "authors": "",
+    "year": "",
+    "url": "https://python.langchain.com/docs/langserve"
+  },
+  {
+    "type": "website",
+    "value": "https://www.ibm.com/think/topics/llamaindex-vs-langchain",
+    "title": "www.ibm.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.ibm.com/think/topics/llamaindex-vs-langchain"
+  },
+  {
+    "type": "website",
+    "value": "https://www.deepchecks.com/langchain-vs-llamaindex-depth-comparison-use/",
+    "title": "www.deepchecks.com",
+    "authors": "",
+    "year": "",
+    "url": "https://www.deepchecks.com/langchain-vs-llamaindex-depth-comparison-use/"
+  },
+  {
+    "type": "website",
+    "value": "https://milvus.io/blog/langchain-vs-langgraph.md",
+    "title": "milvus.io",
+    "authors": "",
+    "year": "",
+    "url": "https://milvus.io/blog/langchain-vs-langgraph.md"
+  },
+  {
+    "type": "website",
+    "value": "https://www.geeksforgeeks.org/artificial-intelligence/langchain-vs-langgraph/",
+    "title": "www.geeksforgeeks.org",
+    "authors": "",
+    "year": "",
+    "url": "https://www.geeksforgeeks.org/artificial-intelligence/langchain-vs-langgraph/"
+  },
+  {
+    "type": "website",
+    "value": "https://coursecrit.com/article/why-langchain-is-bad",
+    "title": "coursecrit.com",
+    "authors": "",
+    "year": "",
+    "url": "https://coursecrit.com/article/why-langchain-is-bad"
+  },
+  {
+    "type": "website",
+    "value": "https://frontvalue.nl/blog/llm-with-langchain",
+    "title": "frontvalue.nl",
+    "authors": "",
+    "year": "",
+    "url": "https://frontvalue.nl/blog/llm-with-langchain"
+  },
+  {
+    "type": "website",
+    "value": "https://airbyte.com/data-engineering-resources/langchain-use-cases",
+    "title": "airbyte.com",
+    "authors": "",
+    "year": "",
+    "url": "https://airbyte.com/data-engineering-resources/langchain-use-cases"
+  },
+  {
+    "type": "website",
+    "value": "https://docs.langchain.com/",
+    "title": "docs.langchain.com",
+    "authors": "",
+    "year": "",
+    "url": "https://docs.langchain.com/"
+  },
+  {
+    "type": "website",
+    "value": "https://reference.langchain.com/python/langchain/",
+    "title": "reference.langchain.com",
+    "authors": "",
+    "year": "",
+    "url": "https://reference.langchain.com/python/langchain/"
+  }
+]

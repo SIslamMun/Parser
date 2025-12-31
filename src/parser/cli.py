@@ -1140,10 +1140,13 @@ def _export_for_batch(refs, output_dir: Path, prefix: str = ""):
     
     Creates a JSON file with format: [{"doi": ..., "title": ..., "pdf_url": ..., "arxiv_id": ...}, ...]
     Merges entries by title to avoid duplicates and collect all metadata.
+    Filters out problematic DOIs (peer reviews, book chapters, etc.)
     """
     from .parser import ReferenceType
+    from .validation import classify_doi, is_problematic_doi
     
     name_prefix = f"{prefix}_" if prefix else ""
+    skipped_dois = []  # Track problematic DOIs for reporting
     
     # First pass: collect all metadata by title (normalized)
     papers_by_title: dict[str, dict] = {}
@@ -1155,13 +1158,20 @@ def _export_for_batch(refs, output_dir: Path, prefix: str = ""):
         # Lowercase, remove extra whitespace, common punctuation
         import re
         title = title.lower().strip()
-        title = re.sub(r'[:\-–—]', ' ', title)
-        title = re.sub(r'\s+', ' ', title)
+        title = re.sub(r'[:\\-–—]', ' ', title)
+        title = re.sub(r'\\s+', ' ', title)
         return title
     
     def update_paper(norm_title: str, title: str, doi: str | None = None, 
                      pdf_url: str | None = None, arxiv_id: str | None = None):
         """Update or create paper entry, preserving best metadata."""
+        # Check if DOI is problematic (peer review, book chapter, etc.)
+        if doi:
+            is_problematic, reason = is_problematic_doi(doi)
+            if is_problematic:
+                skipped_dois.append({"doi": doi, "title": title, "reason": reason})
+                doi = None  # Don't use this DOI
+        
         if norm_title not in papers_by_title:
             papers_by_title[norm_title] = {
                 "title": title,
@@ -1234,6 +1244,20 @@ def _export_for_batch(refs, output_dir: Path, prefix: str = ""):
     batch_path.write_text(json.dumps(batch_items, indent=2))
     click.echo(f"✓ Batch export ({len(batch_items)} papers): {batch_path}")
     click.echo(f"  Use with: parser batch {batch_path} -o ./papers")
+    
+    # Report skipped problematic DOIs
+    if skipped_dois:
+        click.echo(f"⚠ Skipped {len(skipped_dois)} problematic DOIs:")
+        for item in skipped_dois[:5]:  # Show first 5
+            click.echo(f"  - {item['doi'][:50]}...")
+            click.echo(f"    Reason: {item['reason'][:80]}...")
+        if len(skipped_dois) > 5:
+            click.echo(f"  ... and {len(skipped_dois) - 5} more")
+        
+        # Save skipped DOIs to file
+        skipped_path = output_dir / f"{name_prefix}skipped_dois.json"
+        skipped_path.write_text(json.dumps(skipped_dois, indent=2))
+        click.echo(f"  Full list saved to: {skipped_path}")
     
     return batch_path
 

@@ -47,6 +47,17 @@ from .doi2bib.verifier import (
     parse_bib_file,
 )
 from .parser import ParsedReference, ReferenceType, ResearchParser
+from .validation import (
+    classify_doi,
+    detect_title_context_mismatch,
+    is_problematic_doi,
+    validate_doi,
+    validate_paper_match,
+    validate_reference,
+    validate_references,
+    ValidationError,
+    ValidationResult,
+)
 
 __all__ = [
     # Main downloader
@@ -70,6 +81,16 @@ __all__ = [
     "VerificationResult",
     "VerificationStats",
     "parse_bib_file",
+    # Validation
+    "validate_doi",
+    "classify_doi",
+    "is_problematic_doi",
+    "validate_reference",
+    "validate_references",
+    "validate_paper_match",
+    "detect_title_context_mismatch",
+    "ValidationError",
+    "ValidationResult",
     # Orchestration layer
     "Config",
     "RateLimiter",

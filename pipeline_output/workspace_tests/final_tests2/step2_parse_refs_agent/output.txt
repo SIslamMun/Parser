@@ -1,0 +1,19 @@
+=== STEP 2: Parse References (Agent - Claude) ===
+
+STATUS: SKIPPED - Claude CLI Rate Limit Hit
+
+Claude CLI is installed and authenticated:
+  - Version: 2.0.76 (Claude Code)
+  - Plan: Claude Pro with Sonnet 4.5
+  
+ERROR: Rate limit reached (resets at 12pm America/Chicago)
+
+The --agent claude option uses the Claude Agent SDK which authenticates 
+through the Claude Code CLI. No API key is required, but it is subject 
+to the Claude Pro rate limits.
+
+To retry later:
+  parser parse-refs "final_tests2/research document/research_report.md" \
+    -o final_tests2/step2_parse_refs_agent --agent claude
+
+Alternative: Use --agent anthropic with ANTHROPIC_API_KEY environment variable

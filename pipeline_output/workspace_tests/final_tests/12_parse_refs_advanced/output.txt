@@ -1,0 +1,15 @@
+============================================================
+Running REGULAR (regex-based) parsing...
+============================================================
+✓ JSON: final_tests/12_parse_refs_advanced/references.json
+✓ Markdown: final_tests/12_parse_refs_advanced/references.md
+✓ Batch export (13 papers): final_tests/12_parse_refs_advanced/batch.json
+  Use with: parser batch final_tests/12_parse_refs_advanced/batch.json -o ./papers
+✓ DOI export (6 identifiers): final_tests/12_parse_refs_advanced/dois.txt
+  Use with: parser doi2bib -i final_tests/12_parse_refs_advanced/dois.txt -o references.bib
+
+Found 18 references (regular):
+  arxiv: 2
+  doi: 4
+  paper: 7
+  website: 5

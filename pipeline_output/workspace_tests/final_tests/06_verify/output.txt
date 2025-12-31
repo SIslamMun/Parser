@@ -1,0 +1,19 @@
+============================================================
+Citation Verification (Single File Mode)
+============================================================
+Input: final_tests/06_verify/test.bib
+Output: final_tests/06_verify/output
+
+
+Results:
+  Verified: 0
+  arXiv: 0
+  Searched: 0
+  Website: 0
+  Manual: 0
+  Failed: 1
+
+Total verified: 0
+Total failed: 1
+
+Output written to: final_tests/06_verify/output

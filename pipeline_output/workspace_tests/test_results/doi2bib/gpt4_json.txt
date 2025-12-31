@@ -1,0 +1,1997 @@
+{
+  "title": "GPT-4 Technical Report",
+  "authors": [
+    {
+      "name": "OpenAI",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Josh Achiam",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Steven Adler",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Sandhini Agarwal",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Lama Ahmad",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Ilge Akkaya",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Florencia Leoni Aleman",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Diogo Almeida",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Janko Altenschmidt",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Sam Altman",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Shyamal Anadkat",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Red Avila",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Igor Babuschkin",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Suchir Balaji",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Valerie Balcom",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Paul Baltescu",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Haiming Bao",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Mohammad Bavarian",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jeff Belgum",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Irwan Bello",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jake Berdine",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Gabriel Bernadett-Shapiro",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Christopher Berner",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Lenny Bogdonoff",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Oleg Boiko",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Madelaine Boyd",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Anna-Luisa Brakman",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Greg Brockman",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Tim Brooks",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Miles Brundage",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Kevin Button",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Trevor Cai",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Rosie Campbell",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Andrew Cann",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Brittany Carey",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Chelsea Carlson",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Rory Carmichael",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Brooke Chan",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Che Chang",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Fotis Chantzis",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Derek Chen",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Sully Chen",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Ruby Chen",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jason Chen",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Mark Chen",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Ben Chess",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Chester Cho",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Casey Chu",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Hyung Won Chung",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Dave Cummings",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jeremiah Currier",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Yunxing Dai",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Cory Decareaux",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Thomas Degry",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Noah Deutsch",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Damien Deville",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Arka Dhar",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "David Dohan",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Steve Dowling",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Sheila Dunning",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Adrien Ecoffet",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Atty Eleti",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Tyna Eloundou",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "David Farhi",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Liam Fedus",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Niko Felix",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Sim\u00f3n Posada Fishman",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Juston Forte",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Isabella Fulford",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Leo Gao",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Elie Georges",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Christian Gibson",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Vik Goel",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Tarun Gogineni",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Gabriel Goh",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Rapha Gontijo-Lopes",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jonathan Gordon",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Morgan Grafstein",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Scott Gray",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Ryan Greene",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Joshua Gross",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Shixiang Shane Gu",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Yufei Guo",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Chris Hallacy",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jesse Han",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jeff Harris",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Yuchen He",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Mike Heaton",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Johannes Heidecke",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Chris Hesse",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Alan Hickey",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Wade Hickey",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Peter Hoeschele",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Brandon Houghton",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Kenny Hsu",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Shengli Hu",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Xin Hu",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Joost Huizinga",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Shantanu Jain",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Shawn Jain",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Joanne Jang",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Angela Jiang",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Roger Jiang",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Haozhun Jin",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Denny Jin",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Shino Jomoto",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Billie Jonn",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Heewoo Jun",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Tomer Kaftan",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "\u0141ukasz Kaiser",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Ali Kamali",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Ingmar Kanitscheider",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Nitish Shirish Keskar",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Tabarak Khan",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Logan Kilpatrick",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jong Wook Kim",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Christina Kim",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Yongjik Kim",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jan Hendrik Kirchner",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jamie Kiros",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Matt Knight",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Daniel Kokotajlo",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "\u0141ukasz Kondraciuk",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Andrew Kondrich",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Aris Konstantinidis",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Kyle Kosic",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Gretchen Krueger",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Vishal Kuo",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Michael Lampe",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Ikai Lan",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Teddy Lee",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jan Leike",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jade Leung",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Daniel Levy",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Chak Ming Li",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Rachel Lim",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Molly Lin",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Stephanie Lin",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Mateusz Litwin",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Theresa Lopez",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Ryan Lowe",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Patricia Lue",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Anna Makanju",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Kim Malfacini",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Sam Manning",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Todor Markov",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Yaniv Markovski",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Bianca Martin",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Katie Mayer",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Andrew Mayne",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Bob McGrew",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Scott Mayer McKinney",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Christine McLeavey",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Paul McMillan",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jake McNeil",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "David Medina",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Aalok Mehta",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jacob Menick",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Luke Metz",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Andrey Mishchenko",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Pamela Mishkin",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Vinnie Monaco",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Evan Morikawa",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Daniel Mossing",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Tong Mu",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Mira Murati",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Oleg Murk",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "David M\u00e9ly",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Ashvin Nair",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Reiichiro Nakano",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Rajeev Nayak",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Arvind Neelakantan",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Richard Ngo",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Hyeonwoo Noh",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Long Ouyang",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Cullen O'Keefe",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jakub Pachocki",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Alex Paino",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Joe Palermo",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Ashley Pantuliano",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Giambattista Parascandolo",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Joel Parish",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Emy Parparita",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Alex Passos",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Mikhail Pavlov",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Andrew Peng",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Adam Perelman",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Filipe de Avila Belbute Peres",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Michael Petrov",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Henrique Ponde de Oliveira Pinto",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Michael",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Pokorny",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Michelle Pokrass",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Vitchyr H. Pong",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Tolly Powell",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Alethea Power",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Boris Power",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Elizabeth Proehl",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Raul Puri",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Alec Radford",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jack Rae",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Aditya Ramesh",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Cameron Raymond",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Francis Real",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Kendra Rimbach",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Carl Ross",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Bob Rotsted",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Henri Roussez",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Nick Ryder",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Mario Saltarelli",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Ted Sanders",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Shibani Santurkar",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Girish Sastry",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Heather Schmidt",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "David Schnurr",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "John Schulman",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Daniel Selsam",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Kyla Sheppard",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Toki Sherbakov",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jessica Shieh",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Sarah Shoker",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Pranav Shyam",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Szymon Sidor",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Eric Sigler",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Maddie Simens",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jordan Sitkin",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Katarina Slama",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Ian Sohl",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Benjamin Sokolowsky",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Yang Song",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Natalie Staudacher",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Felipe Petroski Such",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Natalie Summers",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Ilya Sutskever",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jie Tang",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Nikolas Tezak",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Madeleine B. Thompson",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Phil Tillet",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Amin Tootoonchian",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Elizabeth Tseng",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Preston Tuggle",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Nick Turley",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jerry Tworek",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Juan Felipe Cer\u00f3n Uribe",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Andrea Vallone",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Arun Vijayvergiya",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Chelsea Voss",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Carroll Wainwright",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Justin Jay Wang",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Alvin Wang",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Ben Wang",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jonathan Ward",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jason Wei",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "CJ Weinmann",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Akila Welihinda",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Peter Welinder",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jiayi Weng",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Lilian Weng",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Matt Wiethoff",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Dave Willner",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Clemens Winter",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Samuel Wolrich",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Hannah Wong",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Lauren Workman",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Sherwin Wu",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Jeff Wu",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Michael Wu",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Kai Xiao",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Tao Xu",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Sarah Yoo",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Kevin Yu",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Qiming Yuan",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Wojciech Zaremba",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Rowan Zellers",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Chong Zhang",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Marvin Zhang",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Shengjia Zhao",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Tianhao Zheng",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Juntang Zhuang",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "William Zhuk",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    },
+    {
+      "name": "Barret Zoph",
+      "given": null,
+      "family": null,
+      "orcid": null,
+      "affiliations": []
+    }
+  ],
+  "year": 2023,
+  "venue": null,
+  "publisher": null,
+  "abstract": "We report the development of GPT-4, a large-scale, multimodal model which can accept image and text inputs and produce text outputs. While less capable than humans in many real-world scenarios, GPT-4 exhibits human-level performance on various professional and academic benchmarks, including passing a simulated bar exam with a score around the top 10% of test takers. GPT-4 is a Transformer-based model pre-trained to predict the next token in a document. The post-training alignment process results in improved performance on measures of factuality and adherence to desired behavior. A core component of this project was developing infrastructure and optimization methods that behave predictably across a wide range of scales. This allowed us to accurately predict some aspects of GPT-4's performance based on models trained with no more than 1/1,000th the compute of GPT-4.",
+  "doi": "10.48550/arXiv.2303.08774",
+  "arxiv_id": "2303.08774",
+  "pmid": null,
+  "pmcid": null,
+  "s2_id": "163b4d6a79a5b19af88b8585456363340d9efd04",
+  "openalex_id": null,
+  "pdf_url": "https://arxiv.org/pdf/2303.08774.pdf",
+  "url": null,
+  "citation_count": 20416,
+  "reference_count": null,
+  "keywords": [],
+  "subjects": [
+    "cs.CL",
+    "cs.AI"
+  ],
+  "publication_date": null,
+  "volume": null,
+  "issue": null,
+  "pages": null,
+  "publication_type": null,
+  "source": "arxiv"
+}
