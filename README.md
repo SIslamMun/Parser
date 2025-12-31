@@ -1,23 +1,24 @@
 # Parser
 
-**Download academic papers automatically from multiple sources.**
+**Download academic papers automatically with full metadata resolution.**
 
-Got a list of papers you need? This tool will find and download PDFs from open access sources, convert DOIs to BibTeX, verify citations, and optionally access papers through your university's subscription.
+Retrieves papers from multiple open access sources, converts DOIs to BibTeX, verifies citations, extracts references, and optionally accesses papers through your university subscription.
 
-## What It Does
+## Features
 
-1. You give it a DOI, arXiv ID, or title
-2. It searches multiple sources (Unpaywall, arXiv, PubMed Central, etc.)
-3. It downloads the PDF to your computer
-
-Also includes: DOI to BibTeX conversion, citation verification, citation graphs, reference extraction, and batch processing.
+- 🔍 **Multi-source retrieval** - Searches 12+ sources including arXiv, Unpaywall, PubMed Central, OpenAlex
+- 📄 **Smart metadata** - Downloads have descriptive filenames: `LeCun_2015_Deep_learning.pdf`
+- 📚 **Batch processing** - Download hundreds of papers with progress tracking
+- 🔄 **Reference extraction** - Parse DOIs, arXiv IDs, URLs from research documents (with automatic deduplication)
+- 📖 **Citation tools** - Convert DOIs to BibTeX, verify citations, get citation graphs
+- 🎓 **Institutional access** - Access paywalled papers via university VPN/EZProxy
+- 🤖 **AI parsing** - Optional Claude/Gemini agents for complex documents
 
 ---
 
 ## Installation
 
 ```bash
-# Clone and install
 git clone <repo-url>
 cd parser
 
@@ -60,13 +61,13 @@ user:
 ### 3. Download a paper
 
 ```bash
-# By DOI
+# By DOI (recommended - most reliable)
 parser retrieve --doi "10.1038/nature12373"
 
 # By arXiv ID
 parser retrieve arXiv:1706.03762
 
-# By title
+# By title (less reliable - may find wrong paper)
 parser retrieve --title "Attention Is All You Need"
 
 # Specify where to save
@@ -76,7 +77,31 @@ parser retrieve --doi "10.1038/nature12373" -o ./papers
 parser retrieve --doi "10.1038/nature12373" -v
 ```
 
-That's it! The PDF will be saved to `./downloads/` (or wherever you specify).
+**Output:**
+```
+✓ Downloaded: LeCun_2015_Deep_learning.pdf
+  Source: openalex
+  Title: Deep learning
+```
+
+PDFs are saved with full metadata: `{first_author}_{year}_{title_short}.pdf`
+
+---
+
+## Commands Overview
+
+| Command | Purpose | Example |
+|---------|---------|---------|
+| `retrieve` | Download single paper | `parser retrieve --doi "10.1038/nature14539"` |
+| `batch` | Download multiple papers | `parser batch papers.txt -o ./downloads` |
+| `parse-refs` | Extract references from docs | `parser parse-refs report.md` |
+| `doi2bib` | Convert DOI to BibTeX/JSON | `parser doi2bib "10.1038/nature14539"` |
+| `verify` | Verify BibTeX citations | `parser verify references.bib -o ./verified` |
+| `citations` | Get citation graph | `parser citations "10.1038/nature14539"` |
+| `sources` | List available sources | `parser sources` |
+| `init` | Create config file | `parser init` |
+| `auth` | Set up institutional access | `parser auth` |
+| `config` | Sync config across machines | `parser config push` |
 
 ---
 
@@ -99,7 +124,15 @@ doi,title
 10.1145/3292500.3330919,
 ```
 
-**Option 3: JSON file**
+**Option 3: JSON file (from parse-refs)**
+```json
+[
+  {"type": "doi", "value": "10.1038/nature12373", "title": "Deep Learning"},
+  {"type": "arxiv", "value": "1706.03762", "title": "Attention Is All You Need"}
+]
+```
+
+**Option 4: Batch format JSON**
 ```json
 [
   {"doi": "10.1038/nature12373"},
@@ -112,10 +145,16 @@ Then run:
 ```bash
 parser batch papers.txt -o ./downloads
 parser batch papers.csv -o ./downloads
-parser batch papers.json -o ./downloads -n 5  # 5 concurrent downloads
+parser batch papers.json -o ./downloads --concurrent 5  # 5 parallel downloads
 ```
 
 The tool will download all papers, skipping any you've already got.
+
+**Features:**
+- ✅ Progress tracking with resume support
+- ✅ Skips existing files automatically
+- ✅ Parallel downloads (configurable concurrency)
+- ✅ Full metadata in all filenames
 
 ---
 
@@ -137,8 +176,8 @@ parser doi2bib 1706.03762
 parser doi2bib 10.1038/nature12373 -o reference.bib
 
 # Different formats
-parser doi2bib 10.1038/nature12373 --format json
-parser doi2bib 10.1038/nature12373 --format markdown
+parser doi2bib 10.1038/nature12373 --format json      # Full metadata JSON
+parser doi2bib 10.1038/nature12373 --format markdown  # Formatted citation
 
 # Process multiple from file
 parser doi2bib -i dois.txt -o references.bib
@@ -225,19 +264,34 @@ parser parse-refs research_report.md
 parser parse-refs report.md -o ./refs
 
 # Output formats
-parser parse-refs report.md --format json
-parser parse-refs report.md --format md
-parser parse-refs report.md --format both
+parser parse-refs report.md --format json    # JSON only
+parser parse-refs report.md --format md      # Markdown only
+parser parse-refs report.md --format both    # Both formats (default)
+
+# Export for pipeline
+parser parse-refs report.md --export-batch   # Creates batch.json for downloads
+parser parse-refs report.md --export-dois    # Creates dois.txt for doi2bib
 ```
 
 **What it extracts:**
 - DOIs (e.g., `10.1038/nature12373`)
 - arXiv IDs (e.g., `arXiv:1706.03762`, `1706.03762`)
-- GitHub repositories (e.g., `owner/repo`)
+- GitHub repositories (e.g., `pytorch/pytorch`)
 - YouTube videos
 - Book ISBNs
 - URLs to papers and websites
 - Paper citations (Author et al., Year)
+
+**Output:**
+```
+references/
+├── references.json    # Structured data
+├── references.md      # Human-readable list
+├── batch.json         # For parser batch (if --export-batch)
+└── dois.txt           # For parser doi2bib (if --export-dois)
+```
+
+**Automatic deduplication:** Duplicate references are removed automatically.
 
 ---
 
@@ -280,45 +334,41 @@ pip install parser[agents]
 ### Usage
 
 ```bash
-# Parse with Claude (NO API KEY NEEDED! Uses Claude Code CLI)
-parser parse-refs document.md --agent claude-sdk
-
-# Parse with Claude (falls back to SDK if available)
+# Parse with Claude SDK (NO API KEY NEEDED! Uses Claude Code CLI)
 parser parse-refs document.md --agent claude
 
 # Direct Anthropic API (requires ANTHROPIC_API_KEY)
 ANTHROPIC_API_KEY=xxx parser parse-refs document.md --agent anthropic
 
 # Parse with Google ADK
-GOOGLE_API_KEY=xxx parser parse-refs document.md --agent google-adk
-
-# Parse with Gemini (direct API)
 GOOGLE_API_KEY=xxx parser parse-refs document.md --agent gemini
 
+# Parse with direct Google API
+GOOGLE_API_KEY=xxx parser parse-refs document.md --agent google
+
 # Specify model
-parser parse-refs document.md --agent claude-sdk --model claude-sonnet-4-20250514
+parser parse-refs document.md --agent claude --model claude-sonnet-4-20250514
 parser parse-refs document.md --agent gemini --model gemini-2.0-flash
 
 # Compare regular vs agent parsing
-parser parse-refs document.md --compare --agent claude-sdk
+parser parse-refs document.md --compare --agent claude
 ```
 
 ### Agent Options
 
 | Agent | Package | API Key Required? | Description |
 |-------|---------|-------------------|-------------|
-| `claude-sdk` | claude-agent-sdk | **NO** | Uses Claude Code CLI (recommended!) |
-| `claude` | claude-agent-sdk or anthropic | Tries SDK first | Falls back to direct API |
+| `claude` | claude-agent-sdk | **NO** | Uses Claude Code CLI (recommended!) |
 | `anthropic` | anthropic | YES | Direct Anthropic API |
-| `google-adk` | google-adk | YES | Google ADK framework |
-| `gemini` | google-generativeai | YES | Direct Google Gemini API |
+| `gemini` | google-adk | YES | Google ADK framework |
+| `google` | google-generativeai | YES | Direct Google Gemini API |
 
 ### Comparison Mode
 
 Run both regex-based and AI-based parsing to compare results:
 
 ```bash
-parser parse-refs report.md --compare --agent claude-sdk -o ./output
+parser parse-refs report.md --compare --agent claude -o ./output
 ```
 
 This creates:
@@ -354,12 +404,12 @@ agent:
 | Aspect | Regular (Regex) | Agent (AI) |
 |--------|-----------------|------------|
 | **Speed** | Fast (milliseconds) | Slower (seconds) |
-| **Cost** | Free | Free (claude-sdk) or API costs |
+| **Cost** | Free | Free (claude) or API costs |
 | **Accuracy** | Good for standard formats | Better for complex documents |
 | **Context** | Limited | Rich context extraction |
 | **Offline** | Works offline | Requires internet |
 
-**Recommendation:** Use `--agent claude-sdk` for best results without any API costs (uses Claude Code CLI authentication).
+**Recommendation:** Use `--agent claude` for best results without any API costs (uses Claude Code CLI authentication).
 
 ---
 
@@ -469,18 +519,46 @@ Ask your library or check your library's website for "off-campus access" instruc
 ### Full config.yaml example
 
 ```yaml
-# Required: Your email for API access
+# Paper PDF Retriever Configuration
+# Copy this file to config.yaml and edit with your settings
+
+# Your identification (required for polite API access)
 user:
-  email: "you@university.edu"
-  name: ""  # Optional
+  email: "your.email@university.edu"  # Your email (required for API access)
+  name: ""                      # Your name (optional)
 
-# Optional: API keys for higher rate limits
+# API Keys (optional but recommended for higher rate limits)
 api_keys:
-  ncbi: null              # Get from https://www.ncbi.nlm.nih.gov/account/settings/
-  semantic_scholar: null  # Get from https://www.semanticscholar.org/product/api
-  crossref_plus: null     # If you have institutional access
+  # NCBI API key for PubMed Central - get from https://www.ncbi.nlm.nih.gov/account/settings/
+  ncbi: null
+  # Semantic Scholar API key - get from https://www.semanticscholar.org/product/api
+  semantic_scholar: null
+  # CrossRef Plus API key (if you have institutional access)
+  crossref_plus: null
 
-# Sources: Enable/disable and set priority (lower = tried first)
+# Institutional Access (for IEEE, ACM, Elsevier via your university)
+#
+# Two modes available:
+#   1. VPN mode: Set vpn_enabled: true when connected to university VPN
+#   2. EZProxy mode: Set proxy_url, then run 'parser auth' to login
+#
+institutional:
+  enabled: false
+
+  # VPN Mode - set to true when connected to university VPN
+  vpn_enabled: false
+  vpn_script: null              # e.g., "./scripts/vpn-connect.sh"
+  vpn_disconnect_script: null   # e.g., "./scripts/vpn-disconnect.sh"
+
+  # EZProxy Mode - browser-based Shibboleth/SAML login
+  proxy_url: null               # e.g., "https://ezproxy.youruniversity.edu/login?url="
+  cookies_file: ".institutional_cookies.pkl"
+
+  university: ""                # Your university name (for reference)
+
+# Source configuration (lower priority number = tried first)
+# Open Access sources are enabled by default
+# Restricted sources (institutional, scihub, libgen) are disabled by default
 sources:
   unpaywall:
     enabled: true
@@ -507,39 +585,30 @@ sources:
     enabled: true
     priority: 8
   institutional:
-    enabled: false  # Enable if you have university access
+    enabled: false              # Enable when using university VPN/EZProxy
     priority: 9
   scihub:
-    enabled: false  # Gray area - use at your own risk
+    enabled: false              # ⚠️ Legal gray area - use at your own risk
     priority: 10
   libgen:
-    enabled: false  # Gray area - use at your own risk
+    enabled: false              # ⚠️ Legal gray area - use at your own risk
     priority: 11
   web_search:
     enabled: false
     priority: 12
 
-# Institutional access settings
-institutional:
-  enabled: false
-  vpn_enabled: false
-  vpn_script: null              # e.g., "./scripts/vpn-connect.sh"
-  vpn_disconnect_script: null
-  proxy_url: null               # e.g., "https://ezproxy.youruni.edu/login?url="
-  cookies_file: ".institutional_cookies.pkl"
-  university: ""                # For reference
-
 # Unofficial sources (require explicit opt-in)
+# ⚠️ WARNING: Use at your own risk. May be illegal in your jurisdiction.
 unofficial:
   disclaimer_accepted: false    # Must set to true to enable scihub/libgen
   scihub:
     enabled: false
-    proxy: null                 # SOCKS5 proxy if needed
+    proxy: null                 # SOCKS5 proxy if needed (e.g., "socks5://127.0.0.1:9050")
   libgen:
     enabled: false
     mirror: "li"                # LibGen mirror: "li", "is", "rs", "st"
 
-# Where to save PDFs
+# Download settings
 download:
   output_dir: "./downloads"
   filename_format: "{first_author}_{year}_{title_short}.pdf"
@@ -547,32 +616,79 @@ download:
   create_subfolders: false
   skip_existing: true
 
-# Rate limiting (don't change unless you know what you're doing)
+# Rate limiting (seconds between requests)
+# Respects API guidelines - do not reduce below these values
 rate_limits:
   global_delay: 1.0
   per_source_delays:
-    crossref: 0.5
-    unpaywall: 0.1
-    arxiv: 3.0
-    pmc: 0.34
-    semantic_scholar: 3.0
-    biorxiv: 1.0
-    scihub: 5.0
-    libgen: 3.0
+    crossref: 0.5               # CrossRef: be polite
+    unpaywall: 0.1              # Unpaywall: fast
+    arxiv: 3.0                  # arXiv: strict rate limit
+    pmc: 0.34                   # PMC: 3 requests/second max
+    semantic_scholar: 3.0       # S2: strict without API key
+    biorxiv: 1.0                # bioRxiv: moderate
+    scihub: 5.0                 # Sci-Hub: be careful
+    libgen: 3.0                 # LibGen: moderate
 
-# Batch processing
+# Batch processing settings
 batch:
-  max_concurrent: 3
-  retry_failed: true
-  max_retries: 2
-  save_progress: true
+  max_concurrent: 3             # Max parallel downloads
+  retry_failed: true            # Retry failed downloads
+  max_retries: 2                # Max retry attempts
+  save_progress: true           # Save progress for resume
   progress_file: ".retrieval_progress.json"
+
+# AI Agent Settings for parse-refs --agent
+# Enable AI-powered reference extraction using Claude or Gemini
+# Usage: parser parse-refs document.md --agent claude
+#        parser parse-refs document.md --agent gemini
+agent:
+  # Anthropic Claude Settings
+  # Get API key from: https://console.anthropic.com/
+  anthropic:
+    api_key: null               # Or set ANTHROPIC_API_KEY env var
+    model: "claude-sonnet-4-20250514"
+    # Available models:
+    # - claude-sonnet-4-20250514 (recommended, fast + capable)
+    # - claude-opus-4-20250514 (most capable, slower)
+    # - claude-3-haiku-20240307 (fastest, less capable)
+
+  # Google Gemini Settings
+  # Get API key from: https://aistudio.google.com/apikey
+  gemini:
+    api_key: null               # Or set GOOGLE_API_KEY env var
+    model: "gemini-2.0-flash"
+    # Available models:
+    # - gemini-2.0-flash (recommended, fast + capable)
+    # - gemini-1.5-pro (more capable, slower)
+    # - gemini-1.5-flash (fast, good for simple docs)
+
+  # Default agent when --agent is used without specifying type
+  default: "claude"             # "claude" or "gemini"
 
 # Logging
 logging:
-  level: "INFO"   # DEBUG, INFO, WARNING, ERROR
-  file: null      # e.g., "parser.log"
+  level: "INFO"                 # DEBUG, INFO, WARNING, ERROR
+  file: null                    # Set to a path to log to file (e.g., "parser.log")
 ```
+
+### Filename Format
+
+Downloaded PDFs use this format by default: `{first_author}_{year}_{title_short}.pdf`
+
+**Examples:**
+- `LeCun_2015_Deep_learning.pdf`
+- `Achiam_2023_GPT-4_Technical_Report.pdf`
+- `Vaswani_2017_Attention_is_All_you_Need.pdf`
+
+Metadata is automatically resolved from CrossRef, Semantic Scholar, or OpenAlex.
+
+**Available placeholders:**
+- `{first_author}` - First author's last name
+- `{year}` - Publication year
+- `{title_short}` - Truncated title (max 7 words)
+- `{title}` - Full title
+- `{doi}` - DOI with `/` and `.` replaced by `_`
 
 ### Environment Variables
 
@@ -583,67 +699,180 @@ You can also set these via environment variables:
 | `PAPER_EMAIL` | Your email (overrides config) |
 | `NCBI_API_KEY` | PubMed/PMC API key |
 | `S2_API_KEY` | Semantic Scholar API key |
+| `ANTHROPIC_API_KEY` | Anthropic Claude API key |
+| `GOOGLE_API_KEY` | Google Gemini API key |
 | `GITHUB_TOKEN` | For config sync (needs gist scope) |
 
 ---
 
 ## CLI Commands Reference
 
+### retrieve - Download single paper
+
 ```bash
-# Show help
-parser --help
+parser retrieve [OPTIONS] [IDENTIFIER]
 
-# Use specific config file
-parser -c /path/to/config.yaml retrieve ...
+Options:
+  -d, --doi TEXT                  Paper DOI
+  -t, --title TEXT                Paper title
+  -o, --output TEXT               Output directory (uses config if not set)
+  -e, --email TEXT                Email for API access
+  --s2-key TEXT                   Semantic Scholar API key
+  --skip-existing / --no-skip-existing
+                                  Skip if PDF exists (uses config if not set)
+  -v, --verbose                   Verbose output
 
-# Download a single paper
-parser retrieve --doi "10.1038/nature12373"
-parser retrieve --title "Paper Title"
-parser retrieve -d "10.1038/nature12373" -o ./papers -e you@email.com -v
-parser retrieve arXiv:1706.03762 -o ./papers
-parser retrieve --no-skip-existing  # Force re-download
+Examples:
+  parser retrieve --doi "10.1038/nature12373"
+  parser retrieve --title "Attention Is All You Need"
+  parser retrieve -d "10.1038/nature12373" -o ./papers -e you@email.com
+  parser retrieve arXiv:2005.11401 -o ./papers
+```
 
-# Download multiple papers
-parser batch papers.txt -o ./downloads
-parser batch papers.csv -o ./downloads
-parser batch papers.json -o ./downloads -n 5 -v  # 5 concurrent, verbose
+### batch - Download multiple papers
 
-# Convert DOI to BibTeX
-parser doi2bib 10.1038/nature12373
-parser doi2bib arXiv:1706.03762
-parser doi2bib 10.1038/nature12373 --format json
-parser doi2bib 10.1038/nature12373 --format markdown
-parser doi2bib -i dois.txt -o references.bib
+```bash
+parser batch [OPTIONS] INPUT_FILE
 
-# Verify citations
-parser verify references.bib -o ./verified
-parser verify citations_dir/ -o ./output
-parser verify refs.bib --skip-keys "website1,manual2"
-parser verify refs.bib --skip-keys-file skip.txt
-parser verify refs.bib --manual manual.bib
-parser verify refs.bib --dry-run -v
+Options:
+  -o, --output TEXT         Output directory (uses config if not set)
+  --email TEXT              Email for API access
+  --s2-key TEXT             Semantic Scholar API key
+  -n, --concurrent INTEGER  Max concurrent downloads (uses config if not set)
+  -v, --verbose             Verbose output
 
-# Citation graph
-parser citations "10.1038/nature12373" --direction both
-parser citations "arXiv:2005.11401" --direction citations -n 100
-parser citations "10.1038/nature12373" --format bibtex -o refs.bib
+Examples:
+  parser batch papers.json -o ./papers
+  parser batch dois.txt -o ./papers --concurrent 3
+  parser batch papers.csv -o ./downloads
+  parser batch references.json -o ./downloads -n 5 -v
+```
 
-# Parse references from documents
-parser parse-refs research_report.md -o ./refs
-parser parse-refs report.md --format json
+### parse-refs - Extract references from documents
 
-# Show available sources and status
+```bash
+parser parse-refs [OPTIONS] INPUT_FILE
+
+Options:
+  -o, --output TEXT               Output directory
+  --format [json|md|both]         Output format (default: both)
+  --agent [none|claude|anthropic|gemini|google]
+                                  AI agent for parsing
+  --api-key TEXT                  API key for agent (not needed for claude)
+  --model TEXT                    Model to use for agent parsing
+  --compare                       Run both regular and agent parsing
+  --export-batch                  Export JSON for 'parser batch'
+  --export-dois                   Export DOI/arXiv IDs for 'parser doi2bib -i'
+
+Examples:
+  parser parse-refs research_report.md
+  parser parse-refs report.md -o ./refs --format json
+  parser parse-refs document.md --agent claude
+  parser parse-refs report.md --compare --agent claude
+  parser parse-refs report.md --export-batch --export-dois
+```
+
+### doi2bib - Convert DOI to BibTeX/JSON/Markdown
+
+```bash
+parser doi2bib [OPTIONS] [IDENTIFIER]
+
+Options:
+  -i, --input PATH                File with DOIs (txt, json from parse-refs)
+  -o, --output PATH               Output file
+  --format [bibtex|json|markdown] Output format
+  --email TEXT                    Email for API access
+  --s2-key TEXT                   Semantic Scholar API key
+
+Examples:
+  parser doi2bib 10.1038/nature12373
+  parser doi2bib arXiv:1605.08695 --format json
+  parser doi2bib 1912.01703 --format markdown
+  parser doi2bib -i dois.txt -o references.bib
+  parser doi2bib -i batch.json -o references.bib
+```
+
+### verify - Verify BibTeX citations
+
+```bash
+parser verify [OPTIONS] INPUT_PATH
+
+Options:
+  -o, --output TEXT      Output directory
+  --email TEXT           Email for CrossRef
+  --skip-keys TEXT       Comma-separated keys to skip verification
+  --skip-keys-file PATH  File with keys to skip (one per line)
+  --manual PATH          Manual.bib with pre-verified entries
+  --dry-run              Don't write files, just show what would happen
+  -v, --verbose          Verbose output
+
+Examples:
+  parser verify references.bib -o ./verified
+  parser verify citations_dir/ -o ./output
+  parser verify refs.bib --skip-keys "website1,manual2"
+  parser verify refs.bib --skip-keys-file skip.txt
+  parser verify refs.bib --manual manual.bib
+  parser verify refs.bib --dry-run -v
+```
+
+### citations - Get citation graph
+
+```bash
+parser citations [OPTIONS] IDENTIFIER
+
+Options:
+  -d, --direction [both|citations|references]
+                                  Citation direction
+  -n, --limit INTEGER             Max results
+  --format [json|bibtex]          Output format
+  -o, --output PATH               Output file
+  --s2-key TEXT                   Semantic Scholar API key
+
+Examples:
+  parser citations "10.1038/nature12373" --direction both
+  parser citations "arXiv:2005.11401" --direction citations -n 100
+  parser citations "10.1038/nature12373" --format bibtex -o refs.bib
+```
+
+### sources - List available sources
+
+```bash
 parser sources
 
-# Initialize config file
+Example:
+  parser sources
+```
+
+### init - Create config file
+
+```bash
 parser init
 
-# Authenticate with your university
+Example:
+  parser init
+```
+
+### auth - Set up institutional access
+
+```bash
 parser auth
 
-# Sync config across machines (requires GITHUB_TOKEN)
-parser config push     # Upload config to private gist
-parser config pull     # Download config from gist
+Example:
+  parser auth
+```
+
+### config - Sync config across machines
+
+```bash
+parser config [push|pull]
+
+Commands:
+  push  Push config to a private GitHub gist
+  pull  Pull config from a private GitHub gist
+
+Examples:
+  parser config push
+  parser config pull
 ```
 
 ---
@@ -695,6 +924,15 @@ Some reasons verification might fail:
 - CrossRef has different metadata (check the report.md)
 
 Use `--skip-keys` for entries you've manually verified.
+
+### Filename shows "XXXX" instead of year
+
+This means metadata resolution failed. The paper still downloads but with generic name. More common for:
+- Very old DOIs
+- Non-standard publishers
+- Papers not in CrossRef/Semantic Scholar/OpenAlex
+
+**Recommendation:** Use `--doi` or `--arxiv` instead of `--title` for better metadata.
 
 ---
 
@@ -760,6 +998,66 @@ The tool respects API rate limits to avoid getting blocked:
 | Frontiers | ~1 req/sec | Uses Selenium fallback |
 | Sci-Hub | Be careful | Use 5+ second delays |
 | LibGen | ~1 req/3 sec | No official limit |
+
+---
+
+## FAQ
+
+**Q: What's the difference between `retrieve` and `batch`?**
+- `retrieve`: Download one paper at a time
+- `batch`: Download multiple papers from a file with progress tracking and resume support
+
+**Q: Can I download paywalled papers?**
+- Yes, if you have institutional access via VPN or EZProxy
+- Alternatively, check if paper has arXiv preprint
+- Sci-Hub available but disabled by default (gray area)
+
+**Q: Why does my filename have "XXXX" instead of year?**
+- Metadata resolution failed for that DOI
+- Paper still downloads successfully
+- More common with old DOIs or non-standard publishers
+- **Fix:** Use `--doi` or `--arxiv` instead of `--title` for better metadata
+
+**Q: What's the best way to download papers?**
+1. Use DOI or arXiv ID (not title)
+2. Enable institutional access if available
+3. Use batch mode for multiple papers
+4. Check parse-refs output before batch download
+
+**Q: Is there a CLI command for validation?**
+- **NO.** validation.py is an internal module used by parse-refs
+- It validates DOIs, arXiv IDs, URLs, and years automatically
+- Not exposed as a CLI command
+- Used behind the scenes to ensure reference quality
+
+**Q: How do I extract references from my document?**
+```bash
+parser parse-refs my_document.md
+# Creates references.json and references.md
+# Then use references.json with batch:
+parser batch references.json -o ./papers
+```
+
+**Q: What does validation.py do?**
+- Internal module for reference validation (not a CLI command)
+- Validates DOI format (`10.XXXX/suffix`)
+- Validates arXiv IDs (new: `YYMM.NNNNN`, old: `archive/YYMMNNN`)
+- Validates URLs (scheme, balanced parentheses)
+- Validates GitHub repos (`owner/repo`)
+- Validates year ranges (1900-2099, warns if >2030)
+- Automatically used by `parse-refs` command
+
+**Q: Title-based download - how reliable is it?**
+- **Less reliable** than DOI/arXiv ID
+- May find wrong paper if title is ambiguous
+- Metadata resolution works better with DOI/arXiv
+- **Recommendation:** Always use DOI or arXiv ID when available
+
+**Q: Why do some papers have full metadata and others just "XXXX"?**
+- Metadata resolution tries multiple sources (CrossRef, Semantic Scholar, OpenAlex)
+- If all sources fail, falls back to `{doi_prefix}_XXXX_paper.pdf`
+- Success rate: ~100% for DOI/arXiv, lower for title-only searches
+- The paper still downloads successfully even with XXXX
 
 ---
 

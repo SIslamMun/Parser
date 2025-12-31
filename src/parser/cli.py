@@ -1470,25 +1470,62 @@ def _load_papers_from_file(filepath: str) -> list[dict[str, str | None]]:
                         doi, title, pdf_url = _parse_identifier(item)
                         papers.append({"doi": doi, "title": title, "pdf_url": pdf_url, "arxiv_id": None})
                     elif isinstance(item, dict):
-                        # Handle batch.json format from parse-refs export
-                        doi = item.get("doi")
-                        title = item.get("title")
-                        pdf_url = item.get("pdf_url")
-                        arxiv_id = item.get("arxiv_id")
-                        
-                        # Convert arXiv ID to DOI format if no DOI present
-                        if arxiv_id and not doi:
-                            arxiv_clean = arxiv_id
-                            if arxiv_clean.lower().startswith("arxiv:"):
-                                arxiv_clean = arxiv_clean[6:]
-                            doi = f"10.48550/arXiv.{arxiv_clean}"
-                        
-                        papers.append({
-                            "doi": doi, 
-                            "title": title, 
-                            "pdf_url": pdf_url,
-                            "arxiv_id": arxiv_id
-                        })
+                        # Handle both formats:
+                        # 1. parse-refs format: {"type": "doi/arxiv/...", "value": "...", "title": "...", "url": "..."}
+                        # 2. batch format: {"doi": "...", "title": "...", "pdf_url": "...", "arxiv_id": "..."}
+
+                        if "type" in item and "value" in item:
+                            # parse-refs format - convert to batch format
+                            ref_type = item.get("type", "")
+                            value = item.get("value", "")
+                            title = item.get("title", "")
+                            url = item.get("url", "")
+
+                            doi = None
+                            arxiv_id = None
+                            pdf_url = None
+
+                            if ref_type == "doi":
+                                doi = value
+                            elif ref_type == "arxiv":
+                                arxiv_id = value
+                                # Convert arXiv ID to DOI format
+                                arxiv_clean = value
+                                if arxiv_clean.lower().startswith("arxiv:"):
+                                    arxiv_clean = arxiv_clean[6:]
+                                doi = f"10.48550/arXiv.{arxiv_clean}"
+                            elif ref_type == "website" and url.endswith(".pdf"):
+                                pdf_url = url
+                            # Skip github, website (non-PDF), etc.
+                            elif ref_type in ("github", "website"):
+                                continue
+
+                            papers.append({
+                                "doi": doi,
+                                "title": title,
+                                "pdf_url": pdf_url,
+                                "arxiv_id": arxiv_id
+                            })
+                        else:
+                            # batch format - use directly
+                            doi = item.get("doi")
+                            title = item.get("title")
+                            pdf_url = item.get("pdf_url")
+                            arxiv_id = item.get("arxiv_id")
+
+                            # Convert arXiv ID to DOI format if no DOI present
+                            if arxiv_id and not doi:
+                                arxiv_clean = arxiv_id
+                                if arxiv_clean.lower().startswith("arxiv:"):
+                                    arxiv_clean = arxiv_clean[6:]
+                                doi = f"10.48550/arXiv.{arxiv_clean}"
+
+                            papers.append({
+                                "doi": doi,
+                                "title": title,
+                                "pdf_url": pdf_url,
+                                "arxiv_id": arxiv_id
+                            })
 
     elif path.suffix == ".csv":
         with open(path) as f:

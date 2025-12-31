@@ -290,24 +290,21 @@ class PaperRetriever:
             if doi:
                 try:
                     await self.rate_limiter.wait("crossref")
-                    work = await crossref.get_work(doi)
-                    if work:
-                        metadata = self._extract_crossref_metadata(work)
-                        if metadata.get("year") and metadata.get("authors"):
-                            return metadata  # Good metadata found
+                    metadata = await crossref.get_paper_metadata(doi)
+                    if metadata and metadata.get("year") and metadata.get("authors"):
+                        return metadata  # Good metadata found
                 except Exception:
                     pass
 
             if title:
                 try:
                     await self.rate_limiter.wait("crossref")
-                    results = await crossref.search_title(title)
+                    results = await crossref.search(title, limit=5)
                     if results:
-                        best_match = self._find_best_title_match(title, results)
-                        if best_match:
-                            metadata = self._extract_crossref_metadata(best_match)
-                            if metadata.get("year") and metadata.get("authors"):
-                                return metadata
+                        # Use the first result (CrossRef ranks by relevance)
+                        best_match = results[0]
+                        if best_match and best_match.get("year") and best_match.get("authors"):
+                            return best_match
                 except Exception:
                     pass
 
@@ -366,72 +363,6 @@ class PaperRetriever:
 
         # No metadata found, return minimal info
         return {"doi": doi, "title": title}
-
-    def _extract_crossref_metadata(self, work: dict[str, Any]) -> dict[str, Any]:
-        """Extract metadata from CrossRef work object."""
-        titles = work.get("title", [])
-        title = titles[0] if titles else None
-
-        authors = []
-        for author in work.get("author", []):
-            name = f"{author.get('given', '')} {author.get('family', '')}".strip()
-            if name:
-                authors.append({
-                    "name": name,
-                    "given": author.get("given"),
-                    "family": author.get("family"),
-                })
-
-        # Get year from published date
-        date_parts = work.get("published", {}).get("date-parts", [[]])
-        year = date_parts[0][0] if date_parts and date_parts[0] else None
-
-        return {
-            "doi": work.get("DOI"),
-            "title": title,
-            "authors": authors,
-            "year": year,
-            "venue": work.get("container-title", [None])[0] if work.get("container-title") else None,
-            "publisher": work.get("publisher"),
-            "type": work.get("type"),
-        }
-
-    def _find_best_title_match(
-        self,
-        query_title: str,
-        results: list[dict[str, Any]]
-    ) -> dict[str, Any] | None:
-        """Find the best matching result for a title query."""
-        query_normalized = self._normalize_title(query_title)
-
-        best_match = None
-        best_score = 0.0
-
-        for result in results:
-            titles = result.get("title", [])
-            if not titles:
-                continue
-
-            result_title = titles[0] if isinstance(titles, list) else titles
-            result_normalized = self._normalize_title(result_title)
-
-            query_words = set(query_normalized.split())
-            result_words = set(result_normalized.split())
-            common = len(query_words & result_words)
-            total = len(query_words | result_words)
-            score = common / total if total > 0 else 0
-
-            if score > best_score:
-                best_score = score
-                best_match = result
-
-        return best_match if best_score >= 0.5 else None
-
-    @staticmethod
-    def _normalize_title(title: str) -> str:
-        """Normalize a title for comparison."""
-        normalized = re.sub(r"[^\w\s]", "", title.lower())
-        return " ".join(normalized.split())
 
     def _get_output_path(self, metadata: dict[str, Any], output_dir: Path) -> Path:
         """Generate output file path from metadata using config filename format."""
@@ -918,6 +849,12 @@ class PaperRetriever:
                 source="libgen", pdf_path=result["pdf_path"],
             ), "downloaded"
         return None, "not available or connection failed"
+
+    @staticmethod
+    def _normalize_title(title: str) -> str:
+        """Normalize a title for comparison."""
+        normalized = re.sub(r"[^\w\s]", "", title.lower())
+        return " ".join(normalized.split())
 
     def _titles_match(self, title1: str, title2: str) -> bool:
         """Check if two titles are similar enough."""
