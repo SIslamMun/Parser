@@ -62,9 +62,14 @@ class LibGenClient:
         self.max_retries = max_retries
         self.rate_limit = rate_limit
         self._last_request: float = 0.0
+        self._warned = False  # Only warn once when actually used
 
-        if enabled:
-            print("⚠️ WARNING: LibGen client enabled. Use may violate copyright laws.")
+    def _warn_on_use(self) -> None:
+        """Show warning on first successful use."""
+        if not self._warned:
+            print("\n⚠️  WARNING: Paper retrieved via LibGen (legal gray area)")
+            print("   Use may violate copyright laws in your jurisdiction.\n")
+            self._warned = True
 
     async def _rate_limit_wait(self) -> None:
         """Wait to respect rate limits."""
@@ -96,11 +101,15 @@ class LibGenClient:
 
         for mirror in self.SEARCH_MIRRORS:
             try:
-                result = await self._search_and_download(
-                    mirror, doi, output_path, search_type="doi"
+                # Add timeout wrapper to prevent hanging
+                result = await asyncio.wait_for(
+                    self._search_and_download(mirror, doi, output_path, search_type="doi"),
+                    timeout=30.0  # 30 second timeout per mirror
                 )
                 if result:
                     return result
+            except asyncio.TimeoutError:
+                continue
             except Exception:
                 continue
 
@@ -128,11 +137,15 @@ class LibGenClient:
 
         for mirror in self.SEARCH_MIRRORS:
             try:
-                result = await self._search_and_download(
-                    mirror, title, output_path, search_type="title"
+                # Add timeout wrapper to prevent hanging
+                result = await asyncio.wait_for(
+                    self._search_and_download(mirror, title, output_path, search_type="title"),
+                    timeout=30.0  # 30 second timeout per mirror
                 )
                 if result:
                     return result
+            except asyncio.TimeoutError:
+                continue
             except Exception:
                 continue
 
@@ -156,8 +169,9 @@ class LibGenClient:
         Returns:
             Result dict or None
         """
+        # Use shorter timeout to avoid hanging
         async with httpx.AsyncClient(
-            timeout=self.timeout,
+            timeout=httpx.Timeout(15.0, connect=10.0),  # 15s total, 10s connect
             follow_redirects=True,
         ) as client:
             # Search for the paper
@@ -325,6 +339,7 @@ class LibGenClient:
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_bytes(content)
 
+            self._warn_on_use()
             return {"pdf_path": str(output_path), "source": "libgen"}
 
         except Exception:

@@ -7,17 +7,21 @@ Provides clients for:
 - Unpaywall: Open access PDF locations
 - arXiv: Preprint access and download
 - PMC: PubMed Central biomedical literature
-- bioRxiv/medRxiv: Biology and medical preprints
+- bioRxiv/medRxiv: Biology and medical preprints (with Selenium fallback)
+- ACL Anthology: NLP conference papers (ACL, EMNLP, NAACL, etc.)
+- Frontiers: Gold OA papers (with Selenium for bot protection)
 - Institutional: EZProxy and VPN access
 - WebSearch: Claude Agent SDK web search for legal PDFs
 - Sci-Hub: Unofficial PDF access (⚠️ legal concerns)
 - LibGen: Unofficial PDF access (⚠️ legal concerns)
 """
 
+from .acl_anthology import ACLAnthologyClient
 from .arxiv import ArxivClient
 from .base import BaseClient, RateLimiter
 from .biorxiv import BioRxivClient
 from .crossref import CrossRefClient
+from .frontiers import FrontiersClient
 from .institutional import InstitutionalAccessClient
 from .libgen import LibGenClient
 from .openalex import OpenAlexClient
@@ -37,6 +41,8 @@ __all__ = [
     "ArxivClient",
     "PMCClient",
     "BioRxivClient",
+    "ACLAnthologyClient",
+    "FrontiersClient",
     "InstitutionalAccessClient",
     "WebSearchClient",
     "ScihubClient",

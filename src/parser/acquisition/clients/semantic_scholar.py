@@ -113,6 +113,15 @@ class SemanticScholarClient(BaseClient):
             return None
 
         # Normalize to common format
+        # Extract PDF URL - try openAccessPdf first, then arXiv fallback
+        pdf_url = data.get("openAccessPdf", {}).get("url") if data.get("openAccessPdf") else None
+
+        # Fallback: if no openAccessPdf but has arXiv ID, construct arXiv PDF URL
+        if not pdf_url:
+            arxiv_id = data.get("externalIds", {}).get("ArXiv")
+            if arxiv_id:
+                pdf_url = f"https://arxiv.org/pdf/{arxiv_id}.pdf"
+
         return {
             "title": data.get("title"),
             "authors": [
@@ -130,7 +139,7 @@ class SemanticScholarClient(BaseClient):
             "pmid": data.get("externalIds", {}).get("PubMed"),
             "s2_id": data.get("paperId"),
             "s2_corpus_id": data.get("externalIds", {}).get("CorpusId"),
-            "pdf_url": data.get("openAccessPdf", {}).get("url") if data.get("openAccessPdf") else None,
+            "pdf_url": pdf_url,
             "citation_count": data.get("citationCount"),
             "reference_count": data.get("referenceCount"),
             "fields_of_study": data.get("fieldsOfStudy"),

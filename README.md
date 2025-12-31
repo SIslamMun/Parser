@@ -25,6 +25,14 @@ cd parser
 uv sync
 ```
 
+### Selenium Support (Optional)
+
+For downloading from bot-protected sites (bioRxiv, Frontiers), the tool uses Selenium with headless Chrome as a fallback. This requires:
+- **Chrome browser** installed on your system
+- **ChromeDriver** (automatically managed by webdriver-manager)
+
+The tool will automatically fall back to Selenium when direct HTTP downloads are blocked. No additional setup required if Chrome is installed.
+
 ---
 
 ## Quick Start
@@ -225,9 +233,133 @@ parser parse-refs report.md --format both
 **What it extracts:**
 - DOIs (e.g., `10.1038/nature12373`)
 - arXiv IDs (e.g., `arXiv:1706.03762`, `1706.03762`)
-- URLs to papers
-- Semantic Scholar links
-- PubMed/PMC IDs
+- GitHub repositories (e.g., `owner/repo`)
+- YouTube videos
+- Book ISBNs
+- URLs to papers and websites
+- Paper citations (Author et al., Year)
+
+---
+
+## AI Agent Parsing (Advanced)
+
+For more accurate reference extraction, use AI agents (Claude or Gemini) to parse documents. This is especially useful for:
+- Complex documents with non-standard citation formats
+- Documents with references embedded in prose
+- When you need better context extraction
+
+### Installation
+
+Install with agent support:
+
+```bash
+# Claude Agent SDK (RECOMMENDED - NO API KEY NEEDED!)
+pip install claude-agent-sdk
+# or
+uv add claude-agent-sdk
+
+# Direct Anthropic API (requires API key)
+pip install anthropic
+# or
+uv add anthropic
+
+# Google Gemini
+pip install google-generativeai
+# or
+uv add google-generativeai
+
+# Google ADK (Agent Development Kit)
+pip install google-adk
+# or
+uv add google-adk
+
+# All agents at once
+pip install parser[agents]
+```
+
+### Usage
+
+```bash
+# Parse with Claude (NO API KEY NEEDED! Uses Claude Code CLI)
+parser parse-refs document.md --agent claude-sdk
+
+# Parse with Claude (falls back to SDK if available)
+parser parse-refs document.md --agent claude
+
+# Direct Anthropic API (requires ANTHROPIC_API_KEY)
+ANTHROPIC_API_KEY=xxx parser parse-refs document.md --agent anthropic
+
+# Parse with Google ADK
+GOOGLE_API_KEY=xxx parser parse-refs document.md --agent google-adk
+
+# Parse with Gemini (direct API)
+GOOGLE_API_KEY=xxx parser parse-refs document.md --agent gemini
+
+# Specify model
+parser parse-refs document.md --agent claude-sdk --model claude-sonnet-4-20250514
+parser parse-refs document.md --agent gemini --model gemini-2.0-flash
+
+# Compare regular vs agent parsing
+parser parse-refs document.md --compare --agent claude-sdk
+```
+
+### Agent Options
+
+| Agent | Package | API Key Required? | Description |
+|-------|---------|-------------------|-------------|
+| `claude-sdk` | claude-agent-sdk | **NO** | Uses Claude Code CLI (recommended!) |
+| `claude` | claude-agent-sdk or anthropic | Tries SDK first | Falls back to direct API |
+| `anthropic` | anthropic | YES | Direct Anthropic API |
+| `google-adk` | google-adk | YES | Google ADK framework |
+| `gemini` | google-generativeai | YES | Direct Google Gemini API |
+
+### Comparison Mode
+
+Run both regex-based and AI-based parsing to compare results:
+
+```bash
+parser parse-refs report.md --compare --agent claude-sdk -o ./output
+```
+
+This creates:
+```
+output/
+├── regular/           # Regex-based results
+│   ├── references.json
+│   └── references.md
+├── agent/             # AI-based results
+│   ├── references.json
+│   ├── references.md
+│   ├── agent_raw_response.txt
+│   └── agent_result.json
+└── comparison_report.md
+```
+
+### Configuration
+
+Add API keys to `config.yaml`:
+
+```yaml
+agent:
+  anthropic:
+    api_key: null  # Or set ANTHROPIC_API_KEY env var
+    model: "claude-sonnet-4-20250514"
+  gemini:
+    api_key: null  # Or set GOOGLE_API_KEY env var
+    model: "gemini-2.0-flash"
+```
+
+### When to Use Agent vs Regular Parsing
+
+| Aspect | Regular (Regex) | Agent (AI) |
+|--------|-----------------|------------|
+| **Speed** | Fast (milliseconds) | Slower (seconds) |
+| **Cost** | Free | Free (claude-sdk) or API costs |
+| **Accuracy** | Good for standard formats | Better for complex documents |
+| **Context** | Limited | Rich context extraction |
+| **Offline** | Works offline | Requires internet |
+
+**Recommendation:** Use `--agent claude-sdk` for best results without any API costs (uses Claude Code CLI authentication).
 
 ---
 
@@ -240,13 +372,15 @@ The tool tries these sources in order:
 | 1 | **Unpaywall** | Legal open access versions from publishers & repositories |
 | 2 | **arXiv** | Preprints in physics, math, CS, quantitative biology |
 | 3 | **PubMed Central** | Open access biomedical literature |
-| 4 | **bioRxiv/medRxiv** | Biology and medical preprints |
+| 4 | **bioRxiv/medRxiv** | Biology and medical preprints (with Selenium fallback) |
 | 5 | **Semantic Scholar** | Academic papers with open access PDFs |
-| 6 | **OpenAlex** | Open access aggregator |
-| 7 | **Institutional** | IEEE, ACM, Elsevier via your university (optional) |
-| 8 | **Sci-Hub** | Gray area source (disabled by default) |
-| 9 | **LibGen** | Gray area source (disabled by default) |
-| 10 | **Web Search** | Google Scholar fallback (disabled by default) |
+| 6 | **ACL Anthology** | NLP papers from ACL, EMNLP, NAACL, etc. |
+| 7 | **OpenAlex** | Open access aggregator |
+| 8 | **Frontiers** | Gold open access publisher (with Selenium fallback) |
+| 9 | **Institutional** | IEEE, ACM, Elsevier via your university (optional) |
+| 10 | **Sci-Hub** | Gray area source (disabled by default) |
+| 11 | **LibGen** | Gray area source (disabled by default) |
+| 12 | **Web Search** | Google Scholar fallback (disabled by default) |
 
 Check your current source status:
 ```bash
@@ -363,21 +497,27 @@ sources:
   semantic_scholar:
     enabled: true
     priority: 5
-  openalex:
+  acl_anthology:
     enabled: true
     priority: 6
+  openalex:
+    enabled: true
+    priority: 7
+  frontiers:
+    enabled: true
+    priority: 8
   institutional:
     enabled: false  # Enable if you have university access
-    priority: 7
+    priority: 9
   scihub:
     enabled: false  # Gray area - use at your own risk
-    priority: 8
+    priority: 10
   libgen:
     enabled: false  # Gray area - use at your own risk
-    priority: 9
+    priority: 11
   web_search:
     enabled: false
-    priority: 10
+    priority: 12
 
 # Institutional access settings
 institutional:
@@ -542,9 +682,10 @@ rate_limits:
 
 ### bioRxiv downloads fail
 
-bioRxiv uses Cloudflare protection that blocks automated downloads. Try:
-- Connect to university VPN (sometimes helps)
-- Download manually from browser
+bioRxiv uses Cloudflare protection that may block automated downloads. The tool automatically falls back to Selenium (headless Chrome) when direct downloads fail. If Selenium fallback also fails:
+- Ensure Chrome is installed on your system
+- Check if webdriver-manager can download ChromeDriver
+- Try connecting to university VPN
 
 ### Verification fails for valid entries
 
@@ -573,7 +714,8 @@ Use `--skip-keys` for entries you've manually verified.
 | Source | Issue | Workaround |
 |--------|-------|------------|
 | **Semantic Scholar** | Aggressive rate limiting (429 errors) | Use 3+ second delays. Get an API key for higher limits. |
-| **bioRxiv/medRxiv** | Cloudflare protection | Often blocked. Use VPN or download manually. |
+| **bioRxiv/medRxiv** | Cloudflare protection | Automatic Selenium fallback when direct download fails. |
+| **Frontiers** | Cloudflare protection | Automatic Selenium fallback for bot-protected pages. |
 | **Institutional** | Requires active session | Re-run `parser auth` if cookies expire. VPN mode is more reliable. |
 | **LibGen** | Often blocked by universities | May not work on university networks. |
 
@@ -613,7 +755,9 @@ The tool respects API rate limits to avoid getting blocked:
 | arXiv | 1 request/3 sec | Official limit |
 | PubMed Central | 3 req/sec (10 with key) | Get API key for more |
 | Semantic Scholar | 100 req/5 min | Free API key available |
-| bioRxiv | ~1 req/sec | No official limit |
+| bioRxiv | ~1 req/sec | Uses Selenium fallback |
+| ACL Anthology | ~1 req/sec | Direct download |
+| Frontiers | ~1 req/sec | Uses Selenium fallback |
 | Sci-Hub | Be careful | Use 5+ second delays |
 | LibGen | ~1 req/3 sec | No official limit |
 

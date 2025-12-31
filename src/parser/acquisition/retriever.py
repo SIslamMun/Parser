@@ -67,9 +67,11 @@ class PaperRetriever:
     def _init_clients(self) -> dict[str, Any]:
         """Initialize all API clients with config-based rate limits."""
         from .clients import (
+            ACLAnthologyClient,
             ArxivClient,
             BioRxivClient,
             CrossRefClient,
+            FrontiersClient,
             OpenAlexClient,
             PMCClient,
             SemanticScholarClient,
@@ -90,8 +92,10 @@ class PaperRetriever:
                 api_key=self.config.api_keys.get("ncbi"),
                 email=self.config.email,
             ),
-            "biorxiv": BioRxivClient(),
+            "biorxiv": BioRxivClient(use_selenium=True),
             "openalex": OpenAlexClient(email=self.config.email),
+            "acl_anthology": ACLAnthologyClient(),
+            "frontiers": FrontiersClient(use_selenium=True),
         }
 
         # Apply config rate limits to clients
@@ -260,33 +264,107 @@ class PaperRetriever:
     async def _resolve_metadata(
         self,
         doi: str | None = None,
-        title: str | None = None
+        title: str | None = None,
+        arxiv_id: str | None = None
     ) -> dict[str, Any] | None:
-        """Resolve full metadata from DOI or title."""
-        crossref = self.clients.get("crossref")
-        if not crossref:
-            return {"doi": doi, "title": title}
+        """Resolve full metadata from DOI, arXiv ID, or title.
 
+        Tries multiple sources in order:
+        1. CrossRef (most reliable for DOIs)
+        2. Semantic Scholar (good for CS papers, supports arXiv)
+        3. OpenAlex (broad coverage)
+        """
+        # Extract arXiv ID from various formats
         if doi:
+            if doi.startswith("arXiv:"):
+                arxiv_id = doi[6:]  # Remove "arXiv:" prefix
+                doi = None
+            elif doi.startswith("10.48550/arXiv."):
+                # arXiv DOI format: 10.48550/arXiv.YYMM.NNNNN
+                arxiv_id = doi.replace("10.48550/arXiv.", "")
+                # Keep the DOI too for CrossRef lookup
+
+        # Try CrossRef first (most comprehensive for DOIs)
+        crossref = self.clients.get("crossref")
+        if crossref:
+            if doi:
+                try:
+                    await self.rate_limiter.wait("crossref")
+                    work = await crossref.get_work(doi)
+                    if work:
+                        metadata = self._extract_crossref_metadata(work)
+                        if metadata.get("year") and metadata.get("authors"):
+                            return metadata  # Good metadata found
+                except Exception:
+                    pass
+
+            if title:
+                try:
+                    await self.rate_limiter.wait("crossref")
+                    results = await crossref.search_title(title)
+                    if results:
+                        best_match = self._find_best_title_match(title, results)
+                        if best_match:
+                            metadata = self._extract_crossref_metadata(best_match)
+                            if metadata.get("year") and metadata.get("authors"):
+                                return metadata
+                except Exception:
+                    pass
+
+        # Try Semantic Scholar as fallback (supports DOI and arXiv)
+        s2 = self.clients.get("semantic_scholar")
+        if s2:
+            identifier = None
+            # Prefer arXiv ID for arXiv papers (better coverage than arXiv DOIs)
+            if arxiv_id:
+                identifier = f"ARXIV:{arxiv_id}"
+            elif doi:
+                identifier = f"DOI:{doi}"
+            if identifier:
+                try:
+                    await self.rate_limiter.wait("semantic_scholar")
+                    result = await s2.get_paper_metadata(identifier)
+                    if result and result.get("year") and result.get("authors"):
+                        return {
+                            "doi": result.get("doi"),
+                            "title": result.get("title"),
+                            "authors": result.get("authors", []),
+                            "year": result.get("year"),
+                            "venue": result.get("venue"),
+                            "arxiv_id": result.get("arxiv_id"),
+                        }
+                except Exception:
+                    pass
+
+        # Try OpenAlex as last resort
+        openalex = self.clients.get("openalex")
+        if openalex and doi:
             try:
-                await self.rate_limiter.wait("crossref")
-                work = await crossref.get_work(doi)
-                if work:
-                    return self._extract_crossref_metadata(work)
+                await self.rate_limiter.wait("openalex")
+                result = await openalex.get_paper_metadata(doi)
+                if result:
+                    # Extract metadata from OpenAlex result
+                    authorships = result.get("authorships", [])
+                    authors = []
+                    for authorship in authorships[:3]:  # First 3 authors
+                        author = authorship.get("author", {})
+                        name = author.get("display_name")
+                        if name:
+                            authors.append({"name": name})
+
+                    pub_year = result.get("publication_year")
+                    if pub_year and authors:
+                        return {
+                            "doi": result.get("doi"),
+                            "title": result.get("title"),
+                            "authors": authors,
+                            "year": pub_year,
+                            "venue": result.get("host_venue", {}).get("display_name"),
+                        }
             except Exception:
                 pass
 
-        if title:
-            try:
-                await self.rate_limiter.wait("crossref")
-                results = await crossref.search_title(title)
-                if results:
-                    best_match = self._find_best_title_match(title, results)
-                    if best_match:
-                        return self._extract_crossref_metadata(best_match)
-            except Exception:
-                pass
-
+        # No metadata found, return minimal info
         return {"doi": doi, "title": title}
 
     def _extract_crossref_metadata(self, work: dict[str, Any]) -> dict[str, Any]:
@@ -366,12 +444,30 @@ class PaperRetriever:
             else:
                 first_author = str(authors[0]).split()[-1]
 
+        # Clean first_author - remove any remaining whitespace/special chars
+        if first_author:
+            first_author = re.sub(r"[^\w-]", "", first_author)
+
+        # Fallback to DOI-based author if missing
+        if not first_author and metadata.get("doi"):
+            # Extract something from DOI as fallback
+            doi_parts = metadata["doi"].split("/")
+            if len(doi_parts) > 1:
+                first_author = doi_parts[1].split(".")[0][:10]  # Use first part of DOI suffix
+
         year = str(metadata.get("year", "")) if metadata.get("year") else ""
         title = metadata.get("title", "") or ""
 
-        # Clean title
+        # Clean title and create short version
         max_len = self.config.download.get("max_title_length", 50)
-        title_short = re.sub(r"[^\w\s-]", "", title)[:max_len].strip()
+        if title:
+            # Remove special characters
+            title_clean = re.sub(r"[^\w\s-]", "", title)
+            # Split into words and limit
+            words = title_clean.split()[:7]  # Max 7 words
+            title_short = "_".join(words)[:max_len].strip()
+        else:
+            title_short = ""
 
         # Get filename format from config
         filename_format = self.config.download.get(
@@ -382,25 +478,34 @@ class PaperRetriever:
         # Build filename using format string
         try:
             filename = filename_format.format(
-                first_author=first_author,
-                year=year,
-                title_short=title_short,
-                title=title,
-                doi=metadata.get("doi", "").replace("/", "_") if metadata.get("doi") else "",
+                first_author=first_author or "Unknown",
+                year=year or "XXXX",
+                title_short=title_short or "paper",
+                title=title or "paper",
+                doi=metadata.get("doi", "").replace("/", "_").replace(".", "_") if metadata.get("doi") else "unknown",
             )
         except KeyError:
             # Fallback if format string has unknown placeholders
-            parts = [p for p in [first_author, year, title_short] if p]
-            if parts:
-                filename = "_".join(parts).replace(" ", "_") + ".pdf"
-            elif metadata.get("doi"):
-                filename = metadata["doi"].replace("/", "_") + ".pdf"
-            else:
-                filename = "paper.pdf"
+            filename = "paper.pdf"
 
-        # Clean up filename
+        # Clean up filename - replace spaces and multiple underscores
         filename = filename.replace(" ", "_")
         filename = re.sub(r"_+", "_", filename)  # Remove multiple underscores
+        filename = filename.strip("_")  # Remove leading/trailing underscores
+
+        # Ensure filename is not empty or just underscores/extension
+        if filename in ("_.pdf", ".pdf", "pdf") or not filename:
+            # Use DOI if available
+            if metadata.get("doi"):
+                filename = metadata["doi"].replace("/", "_").replace(".", "_") + ".pdf"
+            else:
+                # Last resort: use timestamp
+                import time
+                filename = f"paper_{int(time.time())}.pdf"
+
+        # Ensure .pdf extension
+        if not filename.endswith(".pdf"):
+            filename += ".pdf"
 
         # Check if we should create subfolders (one per paper)
         if self.config.download.get("create_subfolders", False):
@@ -441,6 +546,12 @@ class PaperRetriever:
 
             elif source == "semantic_scholar":
                 return await self._try_semantic_scholar(client, doi, title, output_path, logger)
+
+            elif source == "acl_anthology":
+                return await self._try_acl_anthology(client, doi, title, output_path, logger)
+
+            elif source == "frontiers":
+                return await self._try_frontiers(client, doi, title, output_path, logger)
 
             elif source == "openalex":
                 return await self._try_openalex(client, doi, title, output_path, logger)
@@ -538,25 +649,42 @@ class PaperRetriever:
         return None, "PDF download failed"
 
     async def _try_biorxiv(self, client, doi, title, output_path, logger) -> tuple[RetrievalResult | None, str]:
-        """Try bioRxiv source."""
+        """Try bioRxiv source with Selenium fallback for bot protection."""
         if not doi:
             return None, "no DOI provided"
         if not doi.startswith("10.1101"):
             return None, "not a bioRxiv DOI"
 
         logger.detail(f"Checking bioRxiv for {doi}")
-        result = await client.get_preprint(doi)
-
-        if not result or not result.get("pdf_url"):
-            return None, "preprint not found"
-
-        logger.detail(f"PDF URL: {result['pdf_url']}")
-        if await self._download_pdf(result["pdf_url"], output_path):
+        
+        # Use the client's download_pdf method which has Selenium fallback
+        if await client.download_pdf(doi, output_path):
             return RetrievalResult(
                 doi=doi, title=title, status=RetrievalStatus.SUCCESS,
-                source=result.get("server", "biorxiv"), pdf_path=str(output_path),
+                source="biorxiv", pdf_path=str(output_path),
             ), "downloaded"
-        return None, "PDF download failed"
+        return None, "PDF download failed (bot protection)"
+
+    async def _try_frontiers(self, client, doi, title, output_path, logger) -> tuple[RetrievalResult | None, str]:
+        """Try Frontiers source with Selenium for bot protection.
+        
+        Frontiers is a Gold OA publisher but uses CloudFlare protection.
+        """
+        if not doi:
+            return None, "no DOI provided"
+        
+        if not client.is_frontiers_doi(doi):
+            return None, "not a Frontiers DOI"
+        
+        logger.detail(f"Frontiers DOI detected: {doi}")
+        result = await client.download_by_doi(doi, output_path)
+        
+        if result and result.get("pdf_path"):
+            return RetrievalResult(
+                doi=doi, title=title, status=RetrievalStatus.SUCCESS,
+                source="frontiers", pdf_path=result["pdf_path"],
+            ), "downloaded"
+        return None, "PDF download failed (bot protection)"
 
     async def _try_semantic_scholar(self, client, doi, title, output_path, logger) -> tuple[RetrievalResult | None, str]:
         """Try Semantic Scholar source."""
@@ -587,6 +715,29 @@ class PaperRetriever:
             ), "downloaded"
         return None, "PDF download failed"
 
+    async def _try_acl_anthology(self, client, doi, title, output_path, logger) -> tuple[RetrievalResult | None, str]:
+        """Try ACL Anthology source for NLP papers.
+        
+        ACL Anthology hosts papers from ACL, EMNLP, NAACL, etc.
+        All papers are freely available.
+        """
+        if not doi:
+            return None, "no DOI provided"
+        
+        # Check if it's an ACL DOI
+        if not client.is_acl_doi(doi):
+            return None, "not an ACL DOI"
+        
+        logger.detail(f"ACL Anthology DOI detected: {doi}")
+        result = await client.download_by_doi(doi, output_path)
+        
+        if result and result.get("pdf_path"):
+            return RetrievalResult(
+                doi=doi, title=title, status=RetrievalStatus.SUCCESS,
+                source="acl_anthology", pdf_path=result["pdf_path"],
+            ), "downloaded"
+        return None, "PDF download failed"
+
     async def _try_openalex(self, client, doi, title, output_path, logger) -> tuple[RetrievalResult | None, str]:
         """Try OpenAlex source."""
         result = None
@@ -612,12 +763,71 @@ class PaperRetriever:
             return None, "no OA URL"
 
         logger.detail(f"OA URL: {oa_url}")
-        if await self._download_pdf(oa_url, output_path):
+
+        # Extract direct PDF URL from landing pages
+        pdf_url = await self._extract_pdf_url_from_landing_page(oa_url, logger)
+        if not pdf_url:
+            pdf_url = oa_url  # Try original URL as fallback
+
+        if await self._download_pdf(pdf_url, output_path):
             return RetrievalResult(
                 doi=doi, title=title, status=RetrievalStatus.SUCCESS,
                 source="openalex", pdf_path=str(output_path),
             ), "downloaded"
         return None, "PDF download failed"
+
+    async def _extract_pdf_url_from_landing_page(self, url: str, logger) -> str | None:
+        """Extract direct PDF URL from repository landing pages.
+
+        Handles common repository patterns:
+        - HAL (French national archive)
+        - Institutional repositories
+        - Other landing pages with PDF links
+        """
+        # HAL (hal.science, hal.archives-ouvertes.fr)
+        if "hal.science" in url or "hal.archives-ouvertes.fr" in url:
+            # HAL pattern: append /document or /file to get PDF
+            base_url = url.rstrip("/")
+            pdf_url = f"{base_url}/document"
+            logger.detail(f"HAL repository detected, trying: {pdf_url}")
+            return pdf_url
+
+        # For other landing pages, try to parse HTML for PDF links
+        try:
+            import httpx
+            async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as http_client:
+                response = await http_client.get(url)
+                if response.status_code == 200:
+                    html = response.text
+                    # Look for common PDF link patterns
+                    import re
+
+                    # Pattern 1: Direct PDF link in href
+                    pdf_link_patterns = [
+                        r'href=["\']([^"\']+\.pdf)["\']',
+                        r'href=["\']([^"\']+/download[^"\']*)["\']',
+                        r'href=["\']([^"\']+/pdf[^"\']*)["\']',
+                    ]
+
+                    for pattern in pdf_link_patterns:
+                        matches = re.findall(pattern, html, re.IGNORECASE)
+                        if matches:
+                            pdf_path = matches[0]
+                            # Make absolute URL if relative
+                            if pdf_path.startswith('/'):
+                                from urllib.parse import urlparse
+                                parsed = urlparse(url)
+                                pdf_url = f"{parsed.scheme}://{parsed.netloc}{pdf_path}"
+                            elif not pdf_path.startswith('http'):
+                                pdf_url = url.rsplit('/', 1)[0] + '/' + pdf_path
+                            else:
+                                pdf_url = pdf_path
+                            logger.detail(f"Extracted PDF URL from landing page: {pdf_url}")
+                            return pdf_url
+        except Exception as e:
+            logger.detail(f"Could not extract PDF from landing page: {e}")
+
+        return None
 
     async def _try_institutional(self, client, doi, title, output_path, logger) -> tuple[RetrievalResult | None, str]:
         """Try institutional access."""
@@ -654,14 +864,25 @@ class PaperRetriever:
         return None, "PDF download failed"
 
     async def _try_scihub(self, client, doi, title, output_path, logger) -> tuple[RetrievalResult | None, str]:
-        """Try Sci-Hub (unofficial)."""
+        """Try Sci-Hub (unofficial).
+        
+        Lookup priority: title -> DOI (title first tends to have better hit rate)
+        """
         logger.detail("Trying Sci-Hub mirrors...")
         result = None
 
-        if doi:
-            result = await client.download_by_doi(doi, output_path)
-        if not result and title:
-            result = await client.download_by_title(title, output_path)
+        # Priority: title first (better hit rate for some papers)
+        lookup_priority = self.config.download.get("lookup_priority", ["title", "doi"])
+        
+        for method in lookup_priority:
+            if result:
+                break
+            if method == "title" and title:
+                logger.detail(f"Trying by title: {title[:40]}...")
+                result = await client.download_by_title(title, output_path)
+            elif method == "doi" and doi:
+                logger.detail(f"Trying by DOI: {doi}")
+                result = await client.download_by_doi(doi, output_path)
 
         if result and result.get("pdf_path"):
             return RetrievalResult(
@@ -671,14 +892,25 @@ class PaperRetriever:
         return None, "not available or bot protection"
 
     async def _try_libgen(self, client, doi, title, output_path, logger) -> tuple[RetrievalResult | None, str]:
-        """Try LibGen (unofficial)."""
+        """Try LibGen (unofficial).
+        
+        Lookup priority: title -> DOI (title first tends to have better hit rate)
+        """
         logger.detail("Trying LibGen mirrors...")
         result = None
 
-        if doi:
-            result = await client.download_by_doi(doi, output_path)
-        if not result and title:
-            result = await client.download_by_title(title, output_path)
+        # Priority: title first (better hit rate for some papers)
+        lookup_priority = self.config.download.get("lookup_priority", ["title", "doi"])
+        
+        for method in lookup_priority:
+            if result:
+                break
+            if method == "title" and title:
+                logger.detail(f"Trying by title: {title[:40]}...")
+                result = await client.download_by_title(title, output_path)
+            elif method == "doi" and doi:
+                logger.detail(f"Trying by DOI: {doi}")
+                result = await client.download_by_doi(doi, output_path)
 
         if result and result.get("pdf_path"):
             return RetrievalResult(

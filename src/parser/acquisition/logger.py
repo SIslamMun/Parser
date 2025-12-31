@@ -145,7 +145,8 @@ class RetrievalLogger:
         self,
         success: bool,
         source: str | None = None,
-        path: str | None = None
+        path: str | None = None,
+        suggestions: list[str] | None = None
     ) -> None:
         """Log the final result.
 
@@ -153,6 +154,7 @@ class RetrievalLogger:
             success: Whether retrieval succeeded
             source: Which source succeeded (if any)
             path: Path to downloaded file (if success)
+            suggestions: Suggested actions for user if failed
         """
         if success:
             self._log_to_file(f"\n{'=' * 50}")
@@ -172,6 +174,12 @@ class RetrievalLogger:
             if self.console_enabled:
                 self._safe_print("\n✗ Failed - PDF not found in any source")
                 self._safe_print(f"  Log: {self.log_file}")
+
+                # Print suggestions if provided
+                if suggestions:
+                    self._safe_print("\n  Suggestions:")
+                    for suggestion in suggestions:
+                        self._safe_print(f"    • {suggestion}")
 
     def _log_to_file(self, message: str) -> None:
         """Add message to log buffer."""

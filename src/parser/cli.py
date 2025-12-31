@@ -212,24 +212,41 @@ def batch(
         click.echo(click.style("No papers found in file", fg="yellow"))
         return
 
-    # Handle direct PDF URLs separately
-    pdf_urls = [p for p in papers if p.get("pdf_url")]
-    doi_papers = [p for p in papers if not p.get("pdf_url")]
+    # Categorize papers with priority: title → DOI → pdf_url → arxiv_id
+    # Papers with only pdf_url (no title/DOI) are downloaded directly
+    # Papers with title or DOI go through retriever for metadata lookup
+    pdf_only = []  # Direct PDF download (no metadata search)
+    searchable = []  # Title or DOI based search
+    
+    for p in papers:
+        has_title = bool(p.get("title"))
+        has_doi = bool(p.get("doi"))
+        has_pdf = bool(p.get("pdf_url"))
+        
+        if has_title or has_doi:
+            # Use title/DOI for search (pdf_url as fallback)
+            searchable.append(p)
+        elif has_pdf:
+            # Only has PDF URL - direct download
+            pdf_only.append(p)
+        # Skip papers with no identifiable info
 
-    click.echo(f"Found {len(papers)} papers to retrieve ({len(pdf_urls)} direct URLs, {len(doi_papers)} DOI/titles)")
+    click.echo(f"Found {len(papers)} papers to retrieve:")
+    click.echo(f"  - {len(searchable)} with title/DOI (metadata search)")
+    click.echo(f"  - {len(pdf_only)} direct PDF URLs")
     if verbose:
         click.echo(f"Output directory: {output_dir}")
         click.echo(f"Max concurrent: {max_concurrent}")
 
-    # Download direct PDF URLs first
+    # Download direct PDF URLs first (papers with only pdf_url)
     from urllib.parse import urlparse
 
     import httpx
 
-    for i, paper in enumerate(pdf_urls, 1):
+    for i, paper in enumerate(pdf_only, 1):
         pdf_url: str = paper["pdf_url"] or ""
         if verbose:
-            click.echo(f"\n[{i}/{len(pdf_urls)}] Downloading direct PDF: {pdf_url[:60]}...")
+            click.echo(f"\n[{i}/{len(pdf_only)}] Downloading direct PDF: {pdf_url[:60]}...")
 
         try:
             parsed = urlparse(pdf_url)
@@ -248,15 +265,15 @@ def batch(
         except Exception as e:
             click.echo(click.style("✗ Failed: ", fg="red") + str(e))
 
-    # If no DOI papers left, we're done
-    if not doi_papers:
+    # If no searchable papers left, we're done
+    if not searchable:
         return
 
     retriever = PaperRetriever(config)
 
     async def run():
         return await retriever.retrieve_batch(
-            doi_papers,
+            searchable,
             output_dir=output_dir,
             verbose=verbose,
             max_concurrent=max_concurrent,
@@ -603,7 +620,7 @@ def config_pull(ctx: click.Context, gist_id: str | None) -> None:
 
 @cli.command()
 @click.argument("identifier", required=False)
-@click.option("-i", "--input", "input_file", type=click.Path(exists=True), help="File with DOIs (one per line)")
+@click.option("-i", "--input", "input_file", type=click.Path(exists=True), help="File with DOIs (txt, json from parse-refs)")
 @click.option("-o", "--output", "output_file", type=click.Path(), help="Output file")
 @click.option("--format", "output_format", type=click.Choice(["bibtex", "json", "markdown"]), default="bibtex", help="Output format")
 @click.option("--email", envvar="PAPER_EMAIL", help="Email for API access")
@@ -620,12 +637,19 @@ def doi2bib(
 
     Simple lookup - provide a DOI or arXiv ID, get metadata back.
     Can also process a file of DOIs.
+    
+    Input file formats:
+    - TXT: One DOI/arXiv ID per line (dois.txt from parse-refs)
+    - JSON: Array of {doi, title, arxiv_id} objects (batch.json from parse-refs)
+    
+    Priority: title → DOI → arxiv_id (searches by best available identifier)
 
     Examples:
         parser doi2bib 10.1038/nature12373
         parser doi2bib arXiv:1605.08695 --format json
         parser doi2bib 1912.01703 --format markdown
         parser doi2bib -i dois.txt -o references.bib
+        parser doi2bib -i batch.json -o references.bib
     """
     from .doi2bib.metadata import get_metadata as fetch_metadata
     from .doi2bib.resolver import resolve_identifier
@@ -644,32 +668,62 @@ def doi2bib(
 
     # File mode
     if input_file:
-        dois = []
-        with open(input_file) as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith("#"):
-                    dois.append(line)
+        path = Path(input_file)
+        identifiers = []
+        
+        # Support both JSON (batch.json) and TXT (dois.txt) formats
+        if path.suffix == ".json":
+            with open(path) as f:
+                data = json.load(f)
+                if isinstance(data, list):
+                    for item in data:
+                        if isinstance(item, str):
+                            identifiers.append(item)
+                        elif isinstance(item, dict):
+                            # Priority: title → DOI → arxiv_id
+                            # For doi2bib, we need DOI/arXiv, but title can help with search
+                            if item.get("doi"):
+                                identifiers.append(item["doi"])
+                            elif item.get("arxiv_id"):
+                                arxiv = item["arxiv_id"]
+                                if not arxiv.lower().startswith("arxiv:"):
+                                    arxiv = f"arXiv:{arxiv}"
+                                identifiers.append(arxiv)
+                            elif item.get("title"):
+                                # Title-based search not supported in doi2bib
+                                click.echo(f"  Skipping (title only, no DOI): {item['title'][:50]}...", err=True)
+        else:
+            # TXT format - one identifier per line
+            with open(path) as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#"):
+                        identifiers.append(line)
 
-        if not dois:
-            click.echo("No DOIs found in file", err=True)
+        if not identifiers:
+            click.echo("No DOIs/arXiv IDs found in file", err=True)
             sys.exit(1)
 
+        click.echo(f"Processing {len(identifiers)} identifiers...", err=True)
         results = []
-        for doi in dois:
-            click.echo(f"Processing: {doi}...", err=True)
-            result = asyncio.run(get_metadata(doi))
+        failed = []
+        for ident in identifiers:
+            click.echo(f"  {ident}...", err=True)
+            result = asyncio.run(get_metadata(ident))
             if result:
                 results.append(format_result(result))
             else:
-                click.echo(f"  Failed: {doi}", err=True)
+                failed.append(ident)
+                click.echo(f"    ✗ Failed", err=True)
 
         separator = "\n\n" if output_format == "bibtex" else "\n---\n"
         output = separator.join(results)
 
         if output_file:
             Path(output_file).write_text(output)
-            click.echo(f"Wrote {len(results)} entries to {output_file}", err=True)
+            click.echo(f"\n✓ Wrote {len(results)} entries to {output_file}", err=True)
+            if failed:
+                click.echo(f"✗ Failed: {len(failed)} identifiers", err=True)
         else:
             click.echo(output)
         return
@@ -812,32 +866,254 @@ def verify(
 @click.argument("input_file", type=click.Path(exists=True))
 @click.option("-o", "--output", default=None, help="Output directory")
 @click.option("--format", "output_format", type=click.Choice(["json", "md", "both"]), default="both")
-def parse_refs(input_file: str, output: str | None, output_format: str):
+@click.option(
+    "--agent",
+    "agent_type",
+    type=click.Choice(["none", "claude", "anthropic", "gemini", "google"]),
+    default="none",
+    help="AI agent: claude (SDK, no API key), anthropic (API key), gemini (SDK), google (API key)"
+)
+@click.option("--api-key", default=None, help="API key for agent (not needed for claude-sdk)")
+@click.option("--model", default=None, help="Model to use for agent parsing")
+@click.option("--compare", is_flag=True, help="Run both regular and agent parsing for comparison")
+@click.option("--export-batch", is_flag=True, help="Export JSON for 'parser batch' (DOIs, arXiv, PDFs)")
+@click.option("--export-dois", is_flag=True, help="Export DOI/arXiv IDs for 'parser doi2bib -i'")
+def parse_refs(
+    input_file: str,
+    output: str | None,
+    output_format: str,
+    agent_type: str,
+    api_key: str | None,
+    model: str | None,
+    compare: bool,
+    export_batch: bool,
+    export_dois: bool,
+):
     """Parse references from a research document.
 
-    Extracts DOIs, arXiv IDs, URLs from markdown/text documents.
+    Extracts DOIs, arXiv IDs, GitHub repos, YouTube videos, etc.
+
+    Modes:
+    - Regular (default): Fast regex-based extraction
+    - Agent: AI-powered extraction using Claude or Gemini
+    - Compare: Run both and compare results
+
+    Agent Options (Claude):
+    - claude: Uses Claude Agent SDK (NO API KEY needed - uses Claude Code CLI)
+    - anthropic: Direct Anthropic API (requires ANTHROPIC_API_KEY)
+
+    Agent Options (Google):
+    - gemini: Uses Google ADK (requires GOOGLE_API_KEY)
+    - google: Direct google-generativeai API (requires GOOGLE_API_KEY)
+
+    Export Options:
+    - --export-batch: Output batch.json for 'parser batch' (papers with DOIs/arXiv/PDFs)
+    - --export-dois: Output dois.txt for 'parser doi2bib -i' (DOI/arXiv IDs only)
 
     Examples:
+        # Regular parsing (regex-based)
         parser parse-refs research_report.md
         parser parse-refs report.md -o ./refs --format json
+
+        # Agent-based parsing with Claude SDK (NO API KEY!)
+        parser parse-refs report.md --agent claude
+
+        # Agent with direct Anthropic API (needs API key)
+        ANTHROPIC_API_KEY=xxx parser parse-refs report.md --agent anthropic
+
+        # Agent-based parsing with Google ADK
+        GOOGLE_API_KEY=xxx parser parse-refs report.md --agent gemini
+
+        # Agent with direct Google API (needs API key)
+        GOOGLE_API_KEY=xxx parser parse-refs report.md --agent google
+
+        # Compare regular vs agent parsing
+        parser parse-refs report.md --compare --agent claude
+
+        # Export for acquisition pipeline
+        parser parse-refs report.md --export-batch --export-dois
+        parser batch batch.json -o ./papers  # Download extracted papers
+        parser doi2bib -i dois.txt -o refs.bib  # Generate BibTeX
     """
-    from .parser import ResearchParser
-
+    from .parser import ResearchParser, ReferenceType
     input_path = Path(input_file)
-    output_dir = Path(output) if output else input_path.parent
-    output_dir.mkdir(parents=True, exist_ok=True)
+    base_output_dir = Path(output) if output else input_path.parent
 
-    parser = ResearchParser()
-    refs = parser.parse_file(input_path)
+    # Determine which parsing modes to run
+    run_regular = agent_type == "none" or compare
+    run_agent = agent_type != "none"
 
-    if not refs:
-        click.echo("No references found.", err=True)
-        sys.exit(1)
+    results = {}
 
-    grouped = parser.group_by_type(refs)
+    # Run regular parsing
+    if run_regular:
+        click.echo("=" * 60)
+        click.echo("Running REGULAR (regex-based) parsing...")
+        click.echo("=" * 60)
+
+        regular_output_dir = base_output_dir / "regular" if compare else base_output_dir
+        regular_output_dir.mkdir(parents=True, exist_ok=True)
+
+        parser = ResearchParser()
+        refs = parser.parse_file(input_path)
+        results["regular"] = refs
+
+        if refs:
+            grouped = parser.group_by_type(refs)
+            _save_references(refs, grouped, regular_output_dir, output_format, "regular" if compare else "")
+            
+            # Export for batch/doi2bib
+            if export_batch:
+                _export_for_batch(refs, regular_output_dir, "regular" if compare else "")
+            if export_dois:
+                _export_for_doi2bib(refs, regular_output_dir, "regular" if compare else "")
+            
+            click.echo(f"\nFound {len(refs)} references (regular):")
+            for ref_type, type_refs in grouped.items():
+                click.echo(f"  {ref_type.value}: {len(type_refs)}")
+        else:
+            click.echo("No references found (regular).", err=True)
+
+    # Run agent parsing
+    if run_agent:
+        click.echo("\n" + "=" * 60)
+        click.echo(f"Running AGENT ({agent_type}) parsing...")
+        click.echo("=" * 60)
+
+        try:
+            from .agent import create_agent, is_agent_available
+
+            # Check if agent is available
+            available, msg = is_agent_available(agent_type)
+            if not available:
+                click.echo(f"Error: {msg}", err=True)
+                sys.exit(1)
+
+            agent_output_dir = base_output_dir / "agent" if compare else base_output_dir
+            agent_output_dir.mkdir(parents=True, exist_ok=True)
+
+            # Create agent
+            agent = create_agent(agent_type, api_key=api_key, model=model)
+            click.echo(f"Using model: {agent.model}")
+
+            # Parse
+            result = agent.parse_file(input_path)
+            results["agent"] = result.references
+
+            if result.references:
+                # Group by type
+                grouped = {}
+                for ref in result.references:
+                    if ref.type not in grouped:
+                        grouped[ref.type] = []
+                    grouped[ref.type].append(ref)
+
+                agent_prefix = f"agent_{agent_type}" if compare else ""
+                _save_references(
+                    result.references, grouped, agent_output_dir, output_format,
+                    agent_prefix
+                )
+
+                # Export for batch/doi2bib
+                if export_batch:
+                    _export_for_batch(result.references, agent_output_dir, agent_prefix)
+                if export_dois:
+                    _export_for_doi2bib(result.references, agent_output_dir, agent_prefix)
+
+                # Save raw response
+                raw_path = agent_output_dir / "agent_raw_response.txt"
+                raw_path.write_text(result.raw_response)
+                click.echo(f"✓ Raw response: {raw_path}")
+
+                # Save full result with metadata
+                result_path = agent_output_dir / "agent_result.json"
+                result_path.write_text(json.dumps(result.to_dict(), indent=2))
+                click.echo(f"✓ Full result: {result_path}")
+
+                click.echo(f"\nFound {len(result.references)} references (agent):")
+                for ref_type, type_refs in grouped.items():
+                    click.echo(f"  {ref_type.value}: {len(type_refs)}")
+
+                if result.tokens_used:
+                    click.echo(f"\nTokens used: {result.tokens_used}")
+            else:
+                click.echo("No references found (agent).", err=True)
+
+        except ImportError as e:
+            click.echo(f"Error: {e}", err=True)
+            sys.exit(1)
+        except ValueError as e:
+            click.echo(f"Error: {e}", err=True)
+            sys.exit(1)
+
+    # Compare results if requested
+    if compare and "regular" in results and "agent" in results:
+        click.echo("\n" + "=" * 60)
+        click.echo("COMPARISON: Regular vs Agent")
+        click.echo("=" * 60)
+
+        regular_refs = results["regular"]
+        agent_refs = results["agent"]
+
+        # Create sets of (type, value) for comparison
+        regular_set = {(r.type.value, r.value.lower()) for r in regular_refs}
+        agent_set = {(r.type.value, r.value.lower()) for r in agent_refs}
+
+        common = regular_set & agent_set
+        only_regular = regular_set - agent_set
+        only_agent = agent_set - regular_set
+
+        click.echo(f"\nTotal references:")
+        click.echo(f"  Regular: {len(regular_refs)}")
+        click.echo(f"  Agent: {len(agent_refs)}")
+        click.echo(f"\nOverlap analysis:")
+        click.echo(f"  Common: {len(common)}")
+        click.echo(f"  Only in Regular: {len(only_regular)}")
+        click.echo(f"  Only in Agent: {len(only_agent)}")
+
+        if only_regular:
+            click.echo(f"\nOnly found by Regular parsing:")
+            for ref_type, value in sorted(only_regular)[:10]:
+                click.echo(f"  [{ref_type}] {value[:60]}...")
+            if len(only_regular) > 10:
+                click.echo(f"  ... and {len(only_regular) - 10} more")
+
+        if only_agent:
+            click.echo(f"\nOnly found by Agent parsing:")
+            for ref_type, value in sorted(only_agent)[:10]:
+                click.echo(f"  [{ref_type}] {value[:60]}...")
+            if len(only_agent) > 10:
+                click.echo(f"  ... and {len(only_agent) - 10} more")
+
+        # Save comparison report
+        comparison_path = base_output_dir / "comparison_report.md"
+        comparison_lines = [
+            "# Parsing Comparison Report\n",
+            f"Input: {input_path}\n",
+            f"\n## Summary\n",
+            f"- Regular parsing: {len(regular_refs)} references",
+            f"- Agent parsing: {len(agent_refs)} references",
+            f"- Common: {len(common)}",
+            f"- Only Regular: {len(only_regular)}",
+            f"- Only Agent: {len(only_agent)}",
+            f"\n## Only in Regular Parsing\n",
+        ]
+        for ref_type, value in sorted(only_regular):
+            comparison_lines.append(f"- [{ref_type}] {value}")
+        comparison_lines.append(f"\n## Only in Agent Parsing\n")
+        for ref_type, value in sorted(only_agent):
+            comparison_lines.append(f"- [{ref_type}] {value}")
+
+        comparison_path.write_text("\n".join(comparison_lines))
+        click.echo(f"\n✓ Comparison report: {comparison_path}")
+
+
+def _save_references(refs, grouped, output_dir: Path, output_format: str, prefix: str = ""):
+    """Save references to files."""
+    name_prefix = f"{prefix}_" if prefix else ""
 
     if output_format in ("json", "both"):
-        json_path = output_dir / "references.json"
+        json_path = output_dir / f"{name_prefix}references.json"
         json_path.write_text(json.dumps([
             {"type": r.type.value, "value": r.value, "title": r.title,
              "authors": r.authors, "year": r.year, "url": r.url}
@@ -846,7 +1122,7 @@ def parse_refs(input_file: str, output: str | None, output_format: str):
         click.echo(f"✓ JSON: {json_path}")
 
     if output_format in ("md", "both"):
-        md_path = output_dir / "references.md"
+        md_path = output_dir / f"{name_prefix}references.md"
         md_lines = ["# Extracted References\n"]
         for ref_type, type_refs in grouped.items():
             md_lines.append(f"\n## {ref_type.value.title()} ({len(type_refs)})\n")
@@ -858,9 +1134,154 @@ def parse_refs(input_file: str, output: str | None, output_format: str):
         md_path.write_text("\n".join(md_lines))
         click.echo(f"✓ Markdown: {md_path}")
 
-    click.echo(f"\nFound {len(refs)} references:")
-    for ref_type, type_refs in grouped.items():
-        click.echo(f"  {ref_type.value}: {len(type_refs)}")
+
+def _export_for_batch(refs, output_dir: Path, prefix: str = ""):
+    """Export references for 'parser batch' command.
+    
+    Creates a JSON file with format: [{"doi": ..., "title": ..., "pdf_url": ..., "arxiv_id": ...}, ...]
+    Merges entries by title to avoid duplicates and collect all metadata.
+    """
+    from .parser import ReferenceType
+    
+    name_prefix = f"{prefix}_" if prefix else ""
+    
+    # First pass: collect all metadata by title (normalized)
+    papers_by_title: dict[str, dict] = {}
+    
+    def normalize_title(title: str) -> str:
+        """Normalize title for deduplication."""
+        if not title:
+            return ""
+        # Lowercase, remove extra whitespace, common punctuation
+        import re
+        title = title.lower().strip()
+        title = re.sub(r'[:\-–—]', ' ', title)
+        title = re.sub(r'\s+', ' ', title)
+        return title
+    
+    def update_paper(norm_title: str, title: str, doi: str | None = None, 
+                     pdf_url: str | None = None, arxiv_id: str | None = None):
+        """Update or create paper entry, preserving best metadata."""
+        if norm_title not in papers_by_title:
+            papers_by_title[norm_title] = {
+                "title": title,
+                "doi": None,
+                "pdf_url": None,
+                "arxiv_id": None
+            }
+        
+        paper = papers_by_title[norm_title]
+        # Keep longest/most complete title
+        if title and (not paper["title"] or len(title) > len(paper["title"])):
+            paper["title"] = title
+        # Update DOI (prefer non-arXiv DOI)
+        if doi:
+            if not paper["doi"] or (paper["doi"].startswith("10.48550/arXiv") and not doi.startswith("10.48550/arXiv")):
+                paper["doi"] = doi
+        # Update PDF URL
+        if pdf_url and pdf_url.endswith(".pdf") and not paper["pdf_url"]:
+            paper["pdf_url"] = pdf_url
+        # Update arXiv ID
+        if arxiv_id and not paper["arxiv_id"]:
+            paper["arxiv_id"] = arxiv_id
+    
+    # Process all references
+    for ref in refs:
+        title = ref.title or ""
+        norm_title = normalize_title(title)
+        
+        if ref.type == ReferenceType.DOI:
+            doi = ref.value
+            title = ref.title or ""
+            norm_title = normalize_title(title) if title else doi  # Use DOI as key if no title
+            update_paper(norm_title, title, doi=doi)
+        
+        elif ref.type == ReferenceType.ARXIV:
+            arxiv_id = ref.value
+            if arxiv_id.lower().startswith("arxiv:"):
+                arxiv_id = arxiv_id[6:]
+            doi = f"10.48550/arXiv.{arxiv_id}"
+            pdf_url = ref.url if ref.url and "arxiv.org" in ref.url else None
+            title = ref.title or ""
+            norm_title = normalize_title(title) if title else arxiv_id
+            update_paper(norm_title, title, doi=doi, arxiv_id=arxiv_id, pdf_url=pdf_url)
+        
+        elif ref.type == ReferenceType.PDF:
+            pdf_url = ref.url or ref.value
+            title = ref.title or ""
+            if title:
+                norm_title = normalize_title(title)
+                update_paper(norm_title, title, pdf_url=pdf_url)
+            # Skip PDFs without title (can't merge)
+        
+        elif ref.type == ReferenceType.PAPER:
+            title = ref.title or ref.value
+            norm_title = normalize_title(title)
+            doi = ref.metadata.get("doi") if ref.metadata else None
+            pdf_url = ref.url if ref.url and ref.url.endswith(".pdf") else None
+            if norm_title:
+                update_paper(norm_title, title, doi=doi, pdf_url=pdf_url)
+    
+    # Convert to list, filter out empty entries
+    batch_items = []
+    for paper in papers_by_title.values():
+        # Skip entries with no useful data
+        if not paper["title"] and not paper["doi"] and not paper["pdf_url"]:
+            continue
+        batch_items.append(paper)
+    
+    batch_path = output_dir / f"{name_prefix}batch.json"
+    batch_path.write_text(json.dumps(batch_items, indent=2))
+    click.echo(f"✓ Batch export ({len(batch_items)} papers): {batch_path}")
+    click.echo(f"  Use with: parser batch {batch_path} -o ./papers")
+    
+    return batch_path
+
+
+def _export_for_doi2bib(refs, output_dir: Path, prefix: str = ""):
+    """Export DOI/arXiv IDs for 'parser doi2bib -i' command.
+    
+    Creates a text file with one identifier per line.
+    Includes both DOIs and arXiv IDs.
+    """
+    from .parser import ReferenceType
+    
+    name_prefix = f"{prefix}_" if prefix else ""
+    identifiers = []
+    seen = set()
+    
+    for ref in refs:
+        identifier = None
+        
+        if ref.type == ReferenceType.DOI:
+            identifier = ref.value
+        
+        elif ref.type == ReferenceType.ARXIV:
+            arxiv_id = ref.value
+            if arxiv_id.lower().startswith("arxiv:"):
+                arxiv_id = arxiv_id[6:]
+            identifier = f"arXiv:{arxiv_id}"
+        
+        elif ref.type == ReferenceType.PAPER:
+            # Check for DOI or arXiv ID in metadata
+            if ref.metadata.get("doi"):
+                identifier = ref.metadata["doi"]
+            elif ref.metadata.get("arxiv_id"):
+                arxiv_id = ref.metadata["arxiv_id"]
+                if arxiv_id.lower().startswith("arxiv:"):
+                    arxiv_id = arxiv_id[6:]
+                identifier = f"arXiv:{arxiv_id}"
+        
+        if identifier and identifier not in seen:
+            seen.add(identifier)
+            identifiers.append(identifier)
+    
+    dois_path = output_dir / f"{name_prefix}dois.txt"
+    dois_path.write_text("\n".join(identifiers) + "\n")
+    click.echo(f"✓ DOI export ({len(identifiers)} identifiers): {dois_path}")
+    click.echo(f"  Use with: parser doi2bib -i {dois_path} -o references.bib")
+    
+    return dois_path
 
 
 @cli.command()
@@ -1026,7 +1447,15 @@ def _safe_str(text: str) -> str:
 
 
 def _load_papers_from_file(filepath: str) -> list[dict[str, str | None]]:
-    """Load paper identifiers from file."""
+    """Load paper identifiers from file.
+    
+    Supports multiple input formats:
+    - JSON: Array of {doi, title, pdf_url, arxiv_id} objects (from parse-refs --export batch)
+    - CSV: With doi,title columns
+    - TXT: One identifier per line (DOI, arXiv ID, URL, or title)
+    
+    Priority for retrieval: title (for metadata search) → DOI → pdf_url → arxiv_id
+    """
     import csv
 
     path = Path(filepath)
@@ -1039,15 +1468,38 @@ def _load_papers_from_file(filepath: str) -> list[dict[str, str | None]]:
                 for item in data:
                     if isinstance(item, str):
                         doi, title, pdf_url = _parse_identifier(item)
-                        papers.append({"doi": doi, "title": title, "pdf_url": pdf_url})
+                        papers.append({"doi": doi, "title": title, "pdf_url": pdf_url, "arxiv_id": None})
                     elif isinstance(item, dict):
-                        papers.append({"doi": item.get("doi"), "title": item.get("title"), "pdf_url": item.get("pdf_url")})
+                        # Handle batch.json format from parse-refs export
+                        doi = item.get("doi")
+                        title = item.get("title")
+                        pdf_url = item.get("pdf_url")
+                        arxiv_id = item.get("arxiv_id")
+                        
+                        # Convert arXiv ID to DOI format if no DOI present
+                        if arxiv_id and not doi:
+                            arxiv_clean = arxiv_id
+                            if arxiv_clean.lower().startswith("arxiv:"):
+                                arxiv_clean = arxiv_clean[6:]
+                            doi = f"10.48550/arXiv.{arxiv_clean}"
+                        
+                        papers.append({
+                            "doi": doi, 
+                            "title": title, 
+                            "pdf_url": pdf_url,
+                            "arxiv_id": arxiv_id
+                        })
 
     elif path.suffix == ".csv":
         with open(path) as f:
             reader = csv.DictReader(f)
             for row in reader:
-                papers.append({"doi": row.get("doi"), "title": row.get("title")})
+                papers.append({
+                    "doi": row.get("doi"), 
+                    "title": row.get("title"),
+                    "pdf_url": row.get("pdf_url"),
+                    "arxiv_id": row.get("arxiv_id")
+                })
 
     else:  # txt - one identifier per line
         with open(path) as f:
@@ -1056,7 +1508,7 @@ def _load_papers_from_file(filepath: str) -> list[dict[str, str | None]]:
                 if not line or line.startswith("#"):
                     continue
                 doi, title, pdf_url = _parse_identifier(line)
-                papers.append({"doi": doi, "title": title, "pdf_url": pdf_url})
+                papers.append({"doi": doi, "title": title, "pdf_url": pdf_url, "arxiv_id": None})
 
     return papers
 

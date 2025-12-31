@@ -229,6 +229,12 @@ class ResearchParser:
         """Extract paper citations."""
         refs = []
         seen = set()
+        
+        # Keywords that indicate NOT a paper (videos, blogs, etc.)
+        non_paper_indicators = [
+            'youtube', 'video', 'blog', 'medium', 'tutorial',
+            'towardsdatascience', 'documentation', 'docs.',
+        ]
 
         # **Paper:** *Title*
         paper_pattern = r'\*\*Paper:\*\*\s*\*([^*]+)\*'
@@ -251,6 +257,13 @@ class ResearchParser:
             title = match.group(1).strip()
             authors = match.group(2)
             year = match.group(3)
+            context = self._get_context(text, match)
+            
+            # Skip if context indicates this is a video/blog
+            context_lower = context.lower()
+            if any(ind in context_lower for ind in non_paper_indicators):
+                continue
+                
             if title.lower() not in seen:
                 seen.add(title.lower())
                 refs.append(ParsedReference(
@@ -260,6 +273,95 @@ class ResearchParser:
                     authors=authors,
                     year=year,
                     context=match.group(0),
+                ))
+
+        # [N] "Paper Title" (Author et al.). Venue, Year.
+        # Only match if followed by academic venue indicators
+        ref_list_pattern = r'\[(\d+)\]\s*"([^"]{10,200})"\s*\(([^)]+)\)(?:\.?\s*([^,\n]+),?\s*(\d{4}))?'
+        for match in re.finditer(ref_list_pattern, text):
+            title = match.group(2).strip()
+            authors = match.group(3).strip()
+            venue = match.group(4).strip() if match.group(4) else ""
+            year = match.group(5) if match.group(5) else ""
+
+            # Validate year - must be between 1900-2099
+            if year:
+                try:
+                    year_int = int(year)
+                    if not (1900 <= year_int <= 2099):
+                        # Invalid year (likely citation number), try to find real year
+                        context = self._get_context(text, match)
+                        year_match = re.search(r'\b(19|20)\d{2}\b', context)
+                        if year_match:
+                            potential_year = int(year_match.group(0))
+                            if 1900 <= potential_year <= 2099:
+                                year = year_match.group(0)
+                            else:
+                                year = ""
+                        else:
+                            year = ""
+                except ValueError:
+                    year = ""
+
+            context = self._get_context(text, match)
+
+            # Skip if this is in Video/Multimedia section or context indicates video/blog
+            context_lower = context.lower()
+            if any(ind in context_lower for ind in non_paper_indicators):
+                continue
+
+            # Skip if venue indicates it's not a paper
+            venue_lower = venue.lower() if venue else ""
+            if any(ind in venue_lower for ind in non_paper_indicators):
+                continue
+
+            if title.lower() not in seen:
+                seen.add(title.lower())
+                refs.append(ParsedReference(
+                    type=ReferenceType.PAPER,
+                    value=title,
+                    title=title,
+                    authors=authors,
+                    year=year,
+                    context=self._get_context(text, match),
+                ))
+
+        # Conference/Journal citation: "Title" (Author et al.). Venue, Year. DOI/URL
+        # Updated pattern to avoid matching years from arXiv IDs (match after whitespace/comma)
+        venue_pattern = r'"([^"]{15,200})"\s*\(([^)]+)\)\.\s*(?:arXiv|NeurIPS|ICLR|ICML|ACL|NAACL|EMNLP|CVPR|ICCV|ECCV|Nature|Science)[^,\n]*,\s*(\d{4})\b'
+        for match in re.finditer(venue_pattern, text):
+            title = match.group(1).strip()
+            authors = match.group(2).strip()
+            year = match.group(3)
+
+            # Validate year - must be between 1900-2099
+            if year:
+                try:
+                    year_int = int(year)
+                    if not (1900 <= year_int <= 2099):
+                        # Invalid year (likely from arXiv ID), try to find real year
+                        context = self._get_context(text, match)
+                        year_match = re.search(r'\b(19|20)\d{2}\b', context)
+                        if year_match:
+                            potential_year = int(year_match.group(0))
+                            if 1900 <= potential_year <= 2099:
+                                year = year_match.group(0)
+                            else:
+                                year = ""
+                        else:
+                            year = ""
+                except ValueError:
+                    year = ""
+
+            if title.lower() not in seen:
+                seen.add(title.lower())
+                refs.append(ParsedReference(
+                    type=ReferenceType.PAPER,
+                    value=title,
+                    title=title,
+                    authors=authors,
+                    year=year,
+                    context=self._get_context(text, match),
                 ))
 
         return refs
@@ -339,13 +441,20 @@ class ResearchParser:
         refs = []
         seen = set()
 
-        # Known non-books to filter out (PEPs, manifestos, etc.)
+        # Known non-books to filter out (PEPs, manifestos, academic papers, etc.)
         non_books = {
             'the zen of python',
             'pep 8',
             'pep 20',
             'pep 484',
         }
+        
+        # Academic paper keywords - if title contains these, likely a paper not book
+        paper_keywords = [
+            'attention', 'transformer', 'neural', 'learning', 'deep',
+            'bert', 'gpt', 'language model', 'recognition', 'detection',
+            'classification', 'segmentation', 'pre-training', 'pretraining',
+        ]
 
         # Book patterns
         patterns = [
@@ -379,6 +488,11 @@ class ResearchParser:
                 # Skip known non-books
                 if value.lower() in non_books or title.lower() in non_books:
                     continue
+                
+                # Skip if title looks like an academic paper
+                title_lower = title.lower() if title else value.lower()
+                if any(kw in title_lower for kw in paper_keywords):
+                    continue
 
                 if value.lower() not in seen:
                     seen.add(value.lower())
@@ -396,24 +510,93 @@ class ResearchParser:
         """Extract general website URLs."""
         refs = []
         seen = set()
+        seen_url_bases = set()  # Track normalized URL bases to avoid partial matches
 
-        # Skip patterns for other types
+        # Skip patterns for other types (already extracted elsewhere)
         skip_patterns = [
             'github.com', 'arxiv.org', 'doi.org', 'youtube.com', 'youtu.be',
             'spotify.com', 'podcasts.apple.com', '.pdf',
             'vertexaisearch.cloud.google.com',  # Skip redirect URLs
         ]
+        
+        # Skip patterns for academic paper hosting sites (papers already extracted as PAPER type)
+        academic_skip_patterns = [
+            'papers.nips.cc', 'proceedings.neurips.cc', 'openreview.net',
+            'aclweb.org', 'aclanthology.org', 'anthology.aclweb.org',
+            'proceedings.mlr.press', 'jmlr.org', 'ijcai.org',
+            'aaai.org/ojs', 'aaai.org/ocs', 'dl.acm.org',
+            'ieeexplore.ieee.org', 'sciencedirect.com', 'springer.com/article',
+            'nature.com/articles', 'pnas.org', 'plos.org',
+            'frontiersin.org/articles', 'mdpi.com',
+            'biorxiv.org', 'medrxiv.org',  # Preprint servers
+            'semanticscholar.org/paper',  # Semantic Scholar paper pages
+            'openaccess.thecvf.com',  # CVPR/ICCV papers
+        ]
+        
+        def normalize_url(url: str) -> str:
+            """Normalize URL for comparison - strip trailing punctuation and closing parens."""
+            return url.rstrip('.,;:"\'[])(').rstrip(')')
 
-        pattern = r'https?://[^\s\]\)>]+'
-        for match in re.finditer(pattern, text):
-            url = match.group(0).rstrip('.,;:"\'])')
-
+        # Match URLs, handling parentheses in Wikipedia URLs properly
+        # First try to match URLs with balanced parentheses (for Wikipedia)
+        wiki_pattern = r'https?://[^\s\]>]+\([^)]+\)'
+        for match in re.finditer(wiki_pattern, text):
+            url = match.group(0).rstrip('.,;:"\'[]')
+            
             # Skip if matches other types
             if any(skip in url.lower() for skip in skip_patterns):
+                continue
+            
+            # Skip academic paper hosting sites
+            if any(skip in url.lower() for skip in academic_skip_patterns):
                 continue
 
             if url not in seen:
                 seen.add(url)
+                # Track the normalized URL base (with and without closing paren) to avoid partial matches
+                normalized = normalize_url(url)
+                seen_url_bases.add(normalized)
+                # Also track version without trailing parenthesis content
+                if '(' in url:
+                    base_before_paren = url.split('(')[0]
+                    seen_url_bases.add(base_before_paren)
+                    # Track partial match (URL up to but not including closing paren)
+                    paren_idx = url.rfind('(')
+                    if paren_idx > 0:
+                        seen_url_bases.add(url[:paren_idx] + url[paren_idx:].rstrip(')'))
+                
+                domain = re.search(r'https?://([^/]+)', url)
+                title = domain.group(1) if domain else url
+                refs.append(ParsedReference(
+                    type=ReferenceType.WEBSITE,
+                    value=url,
+                    title=title,
+                    url=url,
+                    context=self._get_context(text, match),
+                ))
+
+        # Then match regular URLs
+        pattern = r'https?://[^\s\]\)>]+'
+        for match in re.finditer(pattern, text):
+            url = match.group(0).rstrip('.,;:"\'[]()')
+
+            # Skip if matches other types
+            if any(skip in url.lower() for skip in skip_patterns):
+                continue
+            
+            # Skip academic paper hosting sites
+            if any(skip in url.lower() for skip in academic_skip_patterns):
+                continue
+            
+            # Skip if this URL (or normalized version) was already seen
+            # This handles Wikipedia URLs where we might match partial URL
+            normalized = normalize_url(url)
+            if normalized in seen_url_bases or url in seen_url_bases:
+                continue
+
+            if url not in seen:
+                seen.add(url)
+                seen_url_bases.add(normalized)
                 # Extract domain as title
                 domain = re.search(r'https?://([^/]+)', url)
                 title = domain.group(1) if domain else url
@@ -435,15 +618,30 @@ class ResearchParser:
         return text[start:end].strip()
 
     def _deduplicate(self, refs: list[ParsedReference]) -> list[ParsedReference]:
-        """Remove duplicate references."""
-        seen = set()
+        """Remove duplicate references.
+        
+        Handles both same-type duplicates (same type + value) and cross-type
+        duplicates (e.g., paper title extracted as PAPER but also has URL as WEBSITE).
+        """
+        seen_by_type = set()  # (type, value) pairs
+        seen_urls = set()  # Track all URLs to avoid duplicates across types
         unique = []
 
         for ref in refs:
             key = (ref.type, ref.value.lower())
-            if key not in seen:
-                seen.add(key)
-                unique.append(ref)
+            
+            # Skip if exact same type+value already seen
+            if key in seen_by_type:
+                continue
+            
+            # Skip if URL already seen from another extraction
+            if ref.url and ref.url.lower() in seen_urls:
+                continue
+            
+            seen_by_type.add(key)
+            if ref.url:
+                seen_urls.add(ref.url.lower())
+            unique.append(ref)
 
         return unique
 

@@ -367,22 +367,29 @@ class InstitutionalAccessClient:
                 current_url = driver.current_url
                 parsed = urlparse(current_url)
 
-                # Check if we've passed through the proxy
-                if "ezproxy" not in parsed.netloc.lower() and "login" not in current_url.lower():
-                    # Likely authenticated
+                # Check if we've passed through the proxy and are on a publisher site
+                # EZProxy rewrites domains like nature-com.ezproxy.gl.iit.edu
+                if "ezproxy" in parsed.netloc.lower() and "login" not in current_url.lower():
+                    # Check if we're on a proxied publisher site (not the login page)
+                    if any(x in parsed.netloc.lower() for x in ["nature", "ieee", "acm", "springer", "elsevier", "wiley"]):
+                        print(f"\nReached proxied site: {parsed.netloc}")
+                        break
+
+                # Also check for direct publisher access (some EZProxy setups)
+                if any(x in current_url.lower() for x in ["nature.com", "ieee.org", "acm.org"]) and "login" not in current_url.lower():
                     break
 
-                # Check for common success indicators
-                if any(x in current_url.lower() for x in ["nature.com", "ieee.org", "acm.org"]):
-                    break
-
+            # Collect all cookies from all domains
+            all_cookies = driver.get_cookies()
+            print(f"\nCollected {len(all_cookies)} cookies")
+            
             # Save cookies
-            self._selenium_cookies = driver.get_cookies()
+            self._selenium_cookies = all_cookies
             self._cookies = {c["name"]: c["value"] for c in self._selenium_cookies}
             self.save_cookies()
 
             self._authenticated = True
-            print("\nAuthentication successful! Cookies saved.")
+            print("Authentication successful! Cookies saved.")
             return True
 
         except Exception as e:
@@ -496,15 +503,122 @@ class InstitutionalAccessClient:
             
             return None
 
-        # EZProxy mode - requires Selenium
-        if not self._check_selenium_available():
-            print("Selenium required for EZProxy institutional downloads.")
-            return None
+        # EZProxy mode - use httpx with saved cookies
+        return await self._download_via_ezproxy(doi, output_path)
 
-        # This would require a more complex implementation with
-        # Selenium to handle JavaScript-based downloads
-        print("EZProxy download requires browser access.")
-        print(f"URL: {self.doi_to_proxied_url(doi)}")
+    async def _download_via_ezproxy(
+        self,
+        doi: str,
+        output_path: Path | None = None,
+    ) -> Path | None:
+        """Download PDF via EZProxy using saved cookies.
+        
+        Args:
+            doi: Paper DOI
+            output_path: Where to save the PDF
+            
+        Returns:
+            Path to downloaded PDF, or None if failed
+        """
+        import httpx
+        
+        output_path = Path(output_path) if output_path else self.download_dir / f"{doi.replace('/', '_')}.pdf"
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Convert Selenium cookies to httpx format (strip leading dots from domains)
+        cookies = httpx.Cookies()
+        for cookie in self._selenium_cookies:
+            domain = cookie.get("domain", "").lstrip(".")
+            cookies.set(
+                cookie["name"],
+                cookie["value"],
+                domain=domain,
+            )
+        
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,application/pdf,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+        }
+        
+        try:
+            proxied_url = self.doi_to_proxied_url(doi)
+            
+            async with httpx.AsyncClient(
+                timeout=60.0,
+                follow_redirects=True,
+                headers=headers,
+                cookies=cookies,
+                verify=False,  # Skip SSL verification for EZProxy
+            ) as client:
+                # Navigate through EZProxy to the publisher
+                response = await client.get(proxied_url)
+                final_url = str(response.url)
+                html = response.text
+                
+                # Try to find PDF link on the page using meta tag first (most reliable)
+                pdf_url = self._find_pdf_link(html, final_url)
+                
+                if pdf_url:
+                    # Handle relative URLs
+                    if pdf_url.startswith("/"):
+                        from urllib.parse import urlparse
+                        parsed = urlparse(final_url)
+                        pdf_url = f"{parsed.scheme}://{parsed.netloc}{pdf_url}"
+                    
+                    pdf_response = await client.get(pdf_url)
+                    content = pdf_response.content
+                    
+                    if content.startswith(b"%PDF") and len(content) > 1000:
+                        output_path.write_bytes(content)
+                        return output_path
+                
+                # Try Nature-specific PDF patterns
+                if "nature" in final_url.lower():
+                    # Nature uses /articles/xxx.pdf pattern
+                    nature_patterns = [
+                        final_url.replace("/articles/", "/articles/") + ".pdf",
+                        final_url + ".pdf",
+                        final_url.replace(".html", ".pdf"),
+                    ]
+                    for pattern_url in nature_patterns:
+                        if pattern_url != final_url:
+                            try:
+                                if self.proxy_url and "ezproxy" not in pattern_url.lower():
+                                    pattern_url = self.get_proxied_url(pattern_url)
+                                pdf_response = await client.get(pattern_url)
+                                content = pdf_response.content
+                                if content.startswith(b"%PDF") and len(content) > 1000:
+                                    output_path.write_bytes(content)
+                                    return output_path
+                            except Exception:
+                                continue
+                
+                # Try common PDF URL patterns
+                pdf_patterns = [
+                    final_url.replace("/abs/", "/pdf/"),
+                    final_url.replace("/full/", "/pdf/"),
+                    final_url + ".pdf",
+                    final_url.replace(".html", ".pdf"),
+                ]
+                
+                for pattern_url in pdf_patterns:
+                    if pattern_url != final_url:
+                        try:
+                            if self.proxy_url and "ezproxy" not in pattern_url.lower():
+                                pattern_url = self.get_proxied_url(pattern_url)
+                            pdf_response = await client.get(pattern_url)
+                            content = pdf_response.content
+                            if content.startswith(b"%PDF") and len(content) > 1000:
+                                output_path.write_bytes(content)
+                                return output_path
+                        except Exception:
+                            continue
+                            
+        except Exception as e:
+            self._last_error = str(e)
+            return None
+        
         return None
     
     def _find_pdf_link(self, html: str, base_url: str) -> str | None:

@@ -57,9 +57,7 @@ class ScihubClient:
         self.rate_limit = rate_limit
         self._last_request: float = 0.0
         self._scidownl_available = self._check_scidownl()
-
-        if enabled:
-            print("⚠️ WARNING: Sci-Hub client enabled. Use may violate copyright laws.")
+        self._warned = False  # Only warn once when actually used
 
     def _check_scidownl(self) -> bool:
         """Check if scidownl library is available."""
@@ -68,6 +66,13 @@ class ScihubClient:
             return True
         except ImportError:
             return False
+
+    def _warn_on_use(self) -> None:
+        """Show warning on first successful use."""
+        if not self._warned:
+            print("\n⚠️  WARNING: Paper retrieved via Sci-Hub (legal gray area)")
+            print("   Use may violate copyright laws in your jurisdiction.\n")
+            self._warned = True
 
     async def _rate_limit_wait(self) -> None:
         """Wait to respect rate limits."""
@@ -181,15 +186,23 @@ class ScihubClient:
 
                 return output_path.exists()
 
-            success = await loop.run_in_executor(None, do_download)
+            # Add timeout to prevent scidownl from hanging
+            success = await asyncio.wait_for(
+                loop.run_in_executor(None, do_download),
+                timeout=30.0  # 30 second timeout
+            )
 
             if success and output_path.exists():
                 content = output_path.read_bytes()
                 if content.startswith(b"%PDF") and len(content) > 1000:
+                    self._warn_on_use()
                     return {"pdf_path": str(output_path), "source": "scihub"}
                 else:
                     output_path.unlink(missing_ok=True)
 
+        except asyncio.TimeoutError:
+            # scidownl timed out
+            pass
         except Exception:
             pass
 
@@ -212,9 +225,15 @@ class ScihubClient:
         for mirror in self.MIRRORS:
             for _attempt in range(self.max_retries):
                 try:
-                    result = await self._try_mirror(mirror, doi, output_path)
+                    # Add timeout wrapper to prevent hanging
+                    result = await asyncio.wait_for(
+                        self._try_mirror(mirror, doi, output_path),
+                        timeout=20.0  # 20 second timeout per mirror attempt
+                    )
                     if result:
                         return result
+                except asyncio.TimeoutError:
+                    break  # Move to next mirror
                 except Exception:
                     await asyncio.sleep(1)
 
@@ -239,7 +258,7 @@ class ScihubClient:
         url = f"{mirror}/{doi}"
 
         async with httpx.AsyncClient(
-            timeout=self.timeout,
+            timeout=httpx.Timeout(15.0, connect=10.0),  # 15s total, 10s connect
             follow_redirects=True,
         ) as client:
             response = await client.get(url)
@@ -266,6 +285,7 @@ class ScihubClient:
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_bytes(content)
 
+            self._warn_on_use()
             return {"pdf_path": str(output_path), "source": "scihub"}
 
     def _extract_pdf_url(self, html: str, mirror: str) -> str | None:
