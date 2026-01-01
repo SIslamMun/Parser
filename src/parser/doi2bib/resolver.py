@@ -69,9 +69,9 @@ ARXIV_PATTERN = re.compile(
     re.IGNORECASE
 )
 
-# arXiv DOI pattern: 10.48550/arXiv.2301.12345
+# arXiv DOI pattern: 10.48550/arXiv.2301.12345 (new style) or 10.48550/arXiv.hep-ex/0210439 (old style)
 ARXIV_DOI_PATTERN = re.compile(
-    r"^10\.48550/arXiv\.(\d{4}\.\d{4,5}(?:v\d+)?)$",
+    r"^10\.48550/arXiv\.(\d{4}\.\d{4,5}(?:v\d+)?|\w+(?:-\w+)?/\d{7}|\d{7})$",
     re.IGNORECASE
 )
 
@@ -106,6 +106,25 @@ PDF_URL_PATTERN = re.compile(
     re.IGNORECASE
 )
 
+# New-style arXiv ID pattern (post-April 2007): YYMM.NNNNN
+NEW_ARXIV_ID_PATTERN = re.compile(r"^\d{4}\.\d{4,5}(?:v\d+)?$")
+
+
+def _arxiv_has_doi(arxiv_id: str) -> bool:
+    """Check if an arXiv ID has a 10.48550 DOI.
+    
+    Only new-style arXiv IDs (YYMM.NNNNN format, post-April 2007) have
+    DOIs in the 10.48550/arXiv.XXXX format. Old-style IDs (archive/YYMMNNN)
+    do not have these DOIs.
+    
+    Args:
+        arxiv_id: arXiv ID string
+        
+    Returns:
+        True if the arXiv ID has a 10.48550 DOI
+    """
+    return bool(NEW_ARXIV_ID_PATTERN.match(arxiv_id))
+
 
 def resolve_identifier(input_str: str) -> PaperIdentifier:
     """
@@ -123,11 +142,13 @@ def resolve_identifier(input_str: str) -> PaperIdentifier:
     match = ARXIV_DOI_PATTERN.match(input_str)
     if match:
         arxiv_id = match.group(1)
+        # Only new-style arXiv IDs have valid 10.48550 DOIs
+        doi = f"10.48550/arXiv.{arxiv_id}" if _arxiv_has_doi(arxiv_id) else None
         return PaperIdentifier(
             original=input_str,
             type=IdentifierType.ARXIV,
             value=arxiv_id,
-            doi=f"10.48550/arXiv.{arxiv_id}",
+            doi=doi,
             arxiv_id=arxiv_id,
             url=f"https://arxiv.org/abs/{arxiv_id}",
         )
@@ -147,11 +168,13 @@ def resolve_identifier(input_str: str) -> PaperIdentifier:
     match = ARXIV_PATTERN.match(input_str)
     if match:
         arxiv_id = match.group(1)
+        # Only new-style arXiv IDs have valid 10.48550 DOIs
+        doi = f"10.48550/arXiv.{arxiv_id}" if _arxiv_has_doi(arxiv_id) else None
         return PaperIdentifier(
             original=input_str,
             type=IdentifierType.ARXIV,
             value=arxiv_id,
-            doi=f"10.48550/arXiv.{arxiv_id}",
+            doi=doi,
             arxiv_id=arxiv_id,
             url=f"https://arxiv.org/abs/{arxiv_id}",
         )

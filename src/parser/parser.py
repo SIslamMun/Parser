@@ -16,6 +16,7 @@ class ReferenceType(Enum):
     ARXIV = "arxiv"
     DOI = "doi"
     PAPER = "paper"
+    BLOG = "blog"  # Blog posts, articles (Towards Data Science, Medium, etc.)
     PDF = "pdf"
     YOUTUBE = "youtube"
     PODCAST = "podcast"
@@ -239,14 +240,28 @@ class ResearchParser:
         return refs
 
     def _extract_papers(self, text: str) -> list[ParsedReference]:
-        """Extract paper citations."""
+        """Extract paper citations and blog posts."""
         refs = []
         seen = set()
         
-        # Keywords that indicate NOT a paper (videos, blogs, etc.)
+        # Keywords that indicate NOT a paper (videos only)
         non_paper_indicators = [
-            'youtube', 'video', 'blog', 'medium', 'tutorial',
-            'towardsdatascience', 'documentation', 'docs.',
+            'youtube', 'video',
+        ]
+        
+        # Keywords that indicate a documentation/website ref, not an academic paper
+        doc_indicators = [
+            'user guide', 'documentation', 'readthedocs',
+            'api reference', 'getting started',
+        ]
+        
+        # Keywords that indicate a BLOG POST (not academic paper)
+        # These are publications without DOIs, typically on blogging platforms
+        blog_source_indicators = [
+            'towards data science', 'towardsdatascience', 'medium',
+            'the hdf group', 'hdf group', 'romio blog', 'blog',
+            'dev.to', 'substack', 'hashnode', 'freecodecamp',
+            'analytics vidhya', 'kdnuggets', 'datacamp',
         ]
 
         # **Paper:** *Title*
@@ -272,7 +287,7 @@ class ResearchParser:
             year = match.group(3)
             context = self._get_context(text, match)
             
-            # Skip if context indicates this is a video/blog
+            # Skip if context indicates this is a video
             context_lower = context.lower()
             if any(ind in context_lower for ind in non_paper_indicators):
                 continue
@@ -288,56 +303,103 @@ class ResearchParser:
                     context=match.group(0),
                 ))
 
-        # [N] "Paper Title" (Author et al.). Venue, Year.
-        # Only match if followed by academic venue indicators
-        ref_list_pattern = r'\[(\d+)\]\s*"([^"]{10,200})"\s*\(([^)]+)\)(?:\.?\s*([^,\n]+),?\s*(\d{4}))?'
+        # [N] "Paper Title" (Author et al.). *Venue*, Year. [N]
+        # Updated: Support venue in italics (*Venue*) and year at end
+        ref_list_pattern = r'\[(\d+)\]\s*"([^"]{10,200})"\s*\(([^)]+)\)\.?\s*(?:\*([^*]+)\*)?[,.]?\s*(\d{4})?\.'
         for match in re.finditer(ref_list_pattern, text):
             title = match.group(2).strip()
             authors = match.group(3).strip()
             venue = match.group(4).strip() if match.group(4) else ""
             year = match.group(5) if match.group(5) else ""
 
+            # Also try to extract year from end of line if not captured
+            if not year:
+                context = self._get_context(text, match)
+                year_match = re.search(r'(\d{4})\.\s*\[\d+\]\s*$', context)
+                if year_match:
+                    year = year_match.group(1)
+
             # Validate year - must be between 1900-2099
             if year:
                 try:
                     year_int = int(year)
                     if not (1900 <= year_int <= 2099):
-                        # Invalid year (likely citation number), try to find real year
-                        context = self._get_context(text, match)
-                        year_match = re.search(r'\b(19|20)\d{2}\b', context)
-                        if year_match:
-                            potential_year = int(year_match.group(0))
-                            if 1900 <= potential_year <= 2099:
-                                year = year_match.group(0)
-                            else:
-                                year = ""
-                        else:
-                            year = ""
+                        year = ""
                 except ValueError:
                     year = ""
 
             context = self._get_context(text, match)
-
-            # Skip if this is in Video/Multimedia section or context indicates video/blog
             context_lower = context.lower()
+
+            # Skip if this is a video reference
             if any(ind in context_lower for ind in non_paper_indicators):
                 continue
 
-            # Skip if venue indicates it's not a paper
+            # Check if this is an academic paper (has "et al" in authors)
+            is_academic = 'et al' in authors.lower()
+            
+            # Only apply doc filter to non-academic refs (no "et al")
+            # Academic papers with "schema", "guide" etc in title should be kept
+            if not is_academic:
+                title_lower = title.lower()
+                if any(ind in title_lower for ind in doc_indicators):
+                    continue
+
+            # Check if this is a blog post (non-academic with blog source in author OR venue)
+            authors_lower = authors.lower()
             venue_lower = venue.lower() if venue else ""
-            if any(ind in venue_lower for ind in non_paper_indicators):
-                continue
+            is_blog = not is_academic and (
+                any(ind in authors_lower for ind in blog_source_indicators) or
+                any(ind in venue_lower for ind in blog_source_indicators)
+            )
 
             if title.lower() not in seen:
                 seen.add(title.lower())
                 refs.append(ParsedReference(
-                    type=ReferenceType.PAPER,
+                    type=ReferenceType.BLOG if is_blog else ReferenceType.PAPER,
                     value=title,
                     title=title,
                     authors=authors,
                     year=year,
                     context=self._get_context(text, match),
                 ))
+
+        # [N] "Title" (Source). Year. [N]  - for blog posts without et al.
+        # e.g., [5] "Which data format..." (Towards Data Science). 2023.
+        blog_pattern = r'\[(\d+)\]\s*"([^"]{10,200})"\s*\(([^)]+)\)\.?\s*(\d{4})\.'
+        for match in re.finditer(blog_pattern, text):
+            title = match.group(2).strip()
+            source = match.group(3).strip()
+            year = match.group(4)
+            
+            # Skip if already captured by ref_list_pattern
+            if title.lower() in seen:
+                continue
+            
+            # Skip videos
+            context = self._get_context(text, match)
+            context_lower = context.lower()
+            if any(ind in context_lower for ind in non_paper_indicators):
+                continue
+            
+            # Skip documentation entries
+            title_lower = title.lower()
+            if any(ind in title_lower for ind in doc_indicators):
+                continue
+            
+            # Determine if this is a blog post or paper based on source
+            source_lower = source.lower()
+            is_blog = any(ind in source_lower for ind in blog_source_indicators)
+            
+            seen.add(title.lower())
+            refs.append(ParsedReference(
+                type=ReferenceType.BLOG if is_blog else ReferenceType.PAPER,
+                value=title,
+                title=title,
+                authors=source,  # Source as author (e.g., "Towards Data Science")
+                year=year,
+                context=self._get_context(text, match),
+            ))
 
         # Conference/Journal citation: "Title" (Author et al.). Venue, Year. DOI/URL
         # Updated pattern to avoid matching years from arXiv IDs (match after whitespace/comma)

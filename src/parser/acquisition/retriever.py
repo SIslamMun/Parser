@@ -164,6 +164,8 @@ class PaperRetriever:
         self,
         doi: str | None = None,
         title: str | None = None,
+        arxiv_id: str | None = None,
+        pdf_url: str | None = None,
         output_dir: Path | None = None,
         verbose: bool = True,
     ) -> RetrievalResult:
@@ -172,18 +174,20 @@ class PaperRetriever:
         Args:
             doi: Paper DOI
             title: Paper title
+            arxiv_id: arXiv paper ID (e.g., "2301.12345")
+            pdf_url: Direct PDF URL (tried first if provided)
             output_dir: Override output directory
             verbose: Show progress in console
 
         Returns:
             RetrievalResult with status and file path
         """
-        if not doi and not title:
+        if not doi and not title and not arxiv_id and not pdf_url:
             return RetrievalResult(
                 doi=None,
                 title="",
                 status=RetrievalStatus.ERROR,
-                error="Must provide DOI or title",
+                error="Must provide DOI, title, arXiv ID, or PDF URL",
             )
 
         # Check if DOI is problematic (peer review, book chapter, etc.)
@@ -211,10 +215,12 @@ class PaperRetriever:
         # Create logger
         logger = RetrievalLogger(out_dir, doi, title, console_enabled=verbose)
 
-        # Resolve metadata if needed
-        metadata = await self._resolve_metadata(doi, title)
+        # Resolve metadata using universal title-first approach
+        metadata = await self._resolve_metadata(doi, title, arxiv_id, pdf_url)
         resolved_doi = metadata.get("doi") if metadata else doi
         resolved_title = metadata.get("title") if metadata else title
+        resolved_arxiv = metadata.get("arxiv_id") if metadata else arxiv_id
+        resolved_pdf_url = metadata.get("pdf_url") if metadata else pdf_url
         year = metadata.get("year") if metadata else None
 
         # Show header
@@ -234,6 +240,22 @@ class PaperRetriever:
                 pdf_path=str(output_path),
                 metadata=metadata,
             )
+
+        # Try direct PDF URL first if provided
+        if resolved_pdf_url:
+            logger.detail(f"Trying direct PDF URL: {resolved_pdf_url[:80]}...")
+            if await self._download_pdf(resolved_pdf_url, output_path):
+                logger.final_result(True, "direct_url", str(output_path))
+                return RetrievalResult(
+                    doi=resolved_doi,
+                    title=resolved_title or title or "",
+                    status=RetrievalStatus.SUCCESS,
+                    source="direct_url",
+                    pdf_path=str(output_path),
+                    metadata=metadata,
+                )
+            else:
+                logger.detail("Direct PDF URL download failed, trying other sources...")
 
         # Try sources in priority order
         sources = self.config.get_sorted_sources()
@@ -283,15 +305,23 @@ class PaperRetriever:
         self,
         doi: str | None = None,
         title: str | None = None,
-        arxiv_id: str | None = None
+        arxiv_id: str | None = None,
+        pdf_url: str | None = None,
     ) -> dict[str, Any] | None:
-        """Resolve full metadata from DOI, arXiv ID, or title.
+        """Resolve full metadata from title, DOI, arXiv ID, or PDF URL.
 
-        Priority order (peer-reviewed first, then preprints):
-        1. CrossRef (peer-reviewed DOIs - most authoritative)
-        2. Semantic Scholar (good coverage, supports DOI/arXiv)
-        3. OpenAlex (broad coverage)
-        4. arXiv (preprints - fallback for title-only searches)
+        Universal priority order (title-first for best DOI discovery):
+        1. TITLE SEARCH (universal - works for any paper, finds DOI)
+           - CrossRef title search (peer-reviewed)
+           - Semantic Scholar title search (broad coverage)
+        2. DOI LOOKUP (if provided or found via title search)
+           - CrossRef by DOI
+           - Semantic Scholar by DOI
+           - OpenAlex by DOI
+        3. ARXIV ID LOOKUP (if provided, no DOI found)
+           - Semantic Scholar by arXiv ID
+           - arXiv direct search
+        4. PDF URL (stored in metadata for direct download attempts)
         """
         from ..validation import classify_doi
         
@@ -304,21 +334,44 @@ class PaperRetriever:
                 # arXiv DOI format: 10.48550/arXiv.YYMM.NNNNN
                 arxiv_id = doi.replace("10.48550/arXiv.", "")
                 # Keep the DOI too for CrossRef lookup
+        
+        # Also extract arXiv ID from PDF URL if present
+        if pdf_url and not arxiv_id:
+            arxiv_match = re.search(r"arxiv\.org/(?:abs|pdf)/([\d.]+)", pdf_url)
+            if arxiv_match:
+                arxiv_id = arxiv_match.group(1)
 
-        # 1. Try CrossRef FIRST (peer-reviewed papers are more authoritative)
-        crossref = self.clients.get("crossref")
-        if crossref:
-            if doi and not doi.startswith("10.48550/arXiv"):
-                # Skip arXiv DOIs for CrossRef - they don't have good metadata there
+        # ============================================================
+        # PHASE 1: TITLE SEARCH (Universal - finds DOI for any paper)
+        # ============================================================
+        if title:
+            # 1a. Try Semantic Scholar title search FIRST (better coverage, less rate limited)
+            s2 = self.clients.get("semantic_scholar")
+            if s2:
                 try:
-                    await self.rate_limiter.wait("crossref")
-                    metadata = await crossref.get_paper_metadata(doi)
-                    if metadata and metadata.get("year") and metadata.get("authors"):
-                        return metadata  # Good peer-reviewed metadata found
+                    await self.rate_limiter.wait("semantic_scholar")
+                    results = await s2.search(title, limit=5)
+                    for result in results:
+                        if result and result.get("year"):
+                            # Check title similarity
+                            if self._titles_match(title, result.get("title", ""), threshold=0.8):
+                                found_doi = result.get("doi")
+                                found_arxiv = result.get("arxiv_id")
+                                return {
+                                    "doi": found_doi,
+                                    "title": result.get("title"),
+                                    "authors": result.get("authors", []),
+                                    "year": result.get("year"),
+                                    "venue": result.get("venue"),
+                                    "arxiv_id": found_arxiv,
+                                    "pdf_url": pdf_url,  # Preserve original PDF URL
+                                }
                 except Exception:
                     pass
 
-            if title:
+            # 1b. Try CrossRef title search (peer-reviewed papers)
+            crossref = self.clients.get("crossref")
+            if crossref:
                 try:
                     await self.rate_limiter.wait("crossref")
                     results = await crossref.search(title, limit=5)
@@ -332,22 +385,84 @@ class PaperRetriever:
                         # Check title similarity with higher threshold
                         if result and result.get("year") and result.get("authors"):
                             if self._titles_match(title, result.get("title", ""), threshold=0.8):
+                                result["pdf_url"] = pdf_url  # Preserve original PDF URL
                                 return result
                 except Exception:
                     pass
 
-        # 2. Try Semantic Scholar (good coverage, supports DOI and arXiv)
-        s2 = self.clients.get("semantic_scholar")
-        if s2:
-            identifier = None
-            if doi:
-                identifier = f"DOI:{doi}"
-            elif arxiv_id:
-                identifier = f"ARXIV:{arxiv_id}"
-            if identifier:
+        # ============================================================
+        # PHASE 2: DOI LOOKUP (if DOI was provided directly)
+        # ============================================================
+        if doi and not doi.startswith("10.48550/arXiv"):
+            # 2a. Try CrossRef by DOI (most authoritative for peer-reviewed)
+            crossref = self.clients.get("crossref")
+            if crossref:
+                try:
+                    await self.rate_limiter.wait("crossref")
+                    metadata = await crossref.get_paper_metadata(doi)
+                    if metadata and metadata.get("year") and metadata.get("authors"):
+                        metadata["pdf_url"] = pdf_url
+                        return metadata
+                except Exception:
+                    pass
+
+            # 2b. Try Semantic Scholar by DOI
+            s2 = self.clients.get("semantic_scholar")
+            if s2:
                 try:
                     await self.rate_limiter.wait("semantic_scholar")
-                    result = await s2.get_paper_metadata(identifier)
+                    result = await s2.get_paper_metadata(f"DOI:{doi}")
+                    if result and result.get("year") and result.get("authors"):
+                        return {
+                            "doi": result.get("doi") or doi,
+                            "title": result.get("title"),
+                            "authors": result.get("authors", []),
+                            "year": result.get("year"),
+                            "venue": result.get("venue"),
+                            "arxiv_id": result.get("arxiv_id"),
+                            "pdf_url": pdf_url,
+                        }
+                except Exception:
+                    pass
+
+            # 2c. Try OpenAlex by DOI (broad coverage)
+            openalex = self.clients.get("openalex")
+            if openalex:
+                try:
+                    await self.rate_limiter.wait("openalex")
+                    result = await openalex.get_paper_metadata(doi)
+                    if result:
+                        authorships = result.get("authorships", [])
+                        authors = []
+                        for authorship in authorships[:3]:
+                            author = authorship.get("author", {})
+                            name = author.get("display_name")
+                            if name:
+                                authors.append({"name": name})
+
+                        pub_year = result.get("publication_year")
+                        if pub_year and authors:
+                            return {
+                                "doi": result.get("doi") or doi,
+                                "title": result.get("title"),
+                                "authors": authors,
+                                "year": pub_year,
+                                "venue": result.get("host_venue", {}).get("display_name"),
+                                "pdf_url": pdf_url,
+                            }
+                except Exception:
+                    pass
+
+        # ============================================================
+        # PHASE 3: ARXIV ID LOOKUP (if arXiv ID provided, no DOI found)
+        # ============================================================
+        if arxiv_id:
+            # 3a. Try Semantic Scholar by arXiv ID
+            s2 = self.clients.get("semantic_scholar")
+            if s2:
+                try:
+                    await self.rate_limiter.wait("semantic_scholar")
+                    result = await s2.get_paper_metadata(f"ARXIV:{arxiv_id}")
                     if result and result.get("year") and result.get("authors"):
                         return {
                             "doi": result.get("doi"),
@@ -355,66 +470,64 @@ class PaperRetriever:
                             "authors": result.get("authors", []),
                             "year": result.get("year"),
                             "venue": result.get("venue"),
-                            "arxiv_id": result.get("arxiv_id"),
+                            "arxiv_id": result.get("arxiv_id") or arxiv_id,
+                            "pdf_url": pdf_url or f"https://arxiv.org/pdf/{arxiv_id}.pdf",
                         }
                 except Exception:
                     pass
 
-        # 3. Try OpenAlex (broad coverage)
-        openalex = self.clients.get("openalex")
-        if openalex and doi:
-            try:
-                await self.rate_limiter.wait("openalex")
-                result = await openalex.get_paper_metadata(doi)
-                if result:
-                    # Extract metadata from OpenAlex result
-                    authorships = result.get("authorships", [])
-                    authors = []
-                    for authorship in authorships[:3]:  # First 3 authors
-                        author = authorship.get("author", {})
-                        name = author.get("display_name")
-                        if name:
-                            authors.append({"name": name})
+            # 3b. Try arXiv direct API
+            arxiv_client = self.clients.get("arxiv")
+            if arxiv_client:
+                try:
+                    await self.rate_limiter.wait("arxiv")
+                    # Search by arXiv ID directly
+                    results = await arxiv_client.search(arxiv_id, limit=1)
+                    for result in results:
+                        found_arxiv_id = result.get("arxiv_id")
+                        if found_arxiv_id:
+                            return {
+                                "doi": f"10.48550/arXiv.{found_arxiv_id.split('v')[0]}",
+                                "title": result.get("title"),
+                                "authors": result.get("authors", []),
+                                "year": result.get("year"),
+                                "venue": "arXiv (preprint)",
+                                "arxiv_id": found_arxiv_id,
+                                "is_preprint": True,
+                                "pdf_url": pdf_url or f"https://arxiv.org/pdf/{found_arxiv_id}.pdf",
+                            }
+                except Exception:
+                    pass
 
-                    pub_year = result.get("publication_year")
-                    if pub_year and authors:
-                        return {
-                            "doi": result.get("doi"),
-                            "title": result.get("title"),
-                            "authors": authors,
-                            "year": pub_year,
-                            "venue": result.get("host_venue", {}).get("display_name"),
-                        }
-            except Exception:
-                pass
+        # ============================================================
+        # PHASE 4: TITLE-ONLY ARXIV SEARCH (fallback for preprints)
+        # ============================================================
+        if title and not doi:
+            arxiv_client = self.clients.get("arxiv")
+            if arxiv_client:
+                try:
+                    await self.rate_limiter.wait("arxiv")
+                    quoted_title = f'"{title}"'
+                    results = await arxiv_client.search(quoted_title, limit=5)
+                    for result in results:
+                        found_title = result.get("title", "")
+                        if result.get("arxiv_id") and self._titles_match(title, found_title, threshold=0.8):
+                            found_arxiv_id = result["arxiv_id"]
+                            return {
+                                "doi": f"10.48550/arXiv.{found_arxiv_id.split('v')[0]}",
+                                "title": found_title,
+                                "authors": result.get("authors", []),
+                                "year": result.get("year"),
+                                "venue": "arXiv (preprint)",
+                                "arxiv_id": found_arxiv_id,
+                                "is_preprint": True,
+                                "pdf_url": pdf_url or f"https://arxiv.org/pdf/{found_arxiv_id}.pdf",
+                            }
+                except Exception:
+                    pass
 
-        # 4. Try arXiv as FALLBACK (preprints - for title-only when peer-reviewed not found)
-        arxiv_client = self.clients.get("arxiv")
-        if arxiv_client and title and not doi:
-            try:
-                await self.rate_limiter.wait("arxiv")
-                # Use quoted search for exact title matching
-                quoted_title = f'"{title}"'
-                results = await arxiv_client.search(quoted_title, limit=5)
-                for result in results:
-                    found_title = result.get("title", "")
-                    # Require high similarity (0.8) for arXiv results
-                    if result.get("arxiv_id") and self._titles_match(title, found_title, threshold=0.8):
-                        found_arxiv_id = result["arxiv_id"]
-                        return {
-                            "doi": f"10.48550/arXiv.{found_arxiv_id.split('v')[0]}",
-                            "title": found_title,
-                            "authors": result.get("authors", []),
-                            "year": result.get("year"),
-                            "venue": "arXiv (preprint)",
-                            "arxiv_id": found_arxiv_id,
-                            "is_preprint": True,
-                        }
-            except Exception:
-                pass
-
-        # No metadata found, return minimal info
-        return {"doi": doi, "title": title}
+        # No metadata found, return minimal info with any provided identifiers
+        return {"doi": doi, "title": title, "arxiv_id": arxiv_id, "pdf_url": pdf_url}
 
     def _get_output_path(self, metadata: dict[str, Any], output_dir: Path) -> Path:
         """Generate output file path from metadata using config filename format."""
@@ -974,6 +1087,7 @@ class PaperRetriever:
         
         Uses two methods:
         1. Substring match: If one title contains the other (for truncated titles)
+           Only matches if shorter is at least 60% of longer length
         2. Word overlap: Jaccard similarity of words
         
         Args:
@@ -985,9 +1099,14 @@ class PaperRetriever:
         norm2 = self._normalize_title(title2)
 
         # Check for substring match (handles truncated titles)
-        # e.g., "BERT Pre-training..." matches "BERT Pre-training... for Language Understanding"
+        # Only allow if shorter title is at least 60% of the longer title length
+        # This prevents "The NeXus data format" from matching 
+        # "The application of the NeXus data format to ISIS muon data"
         if norm1 in norm2 or norm2 in norm1:
-            return True
+            shorter_len = min(len(norm1), len(norm2))
+            longer_len = max(len(norm1), len(norm2))
+            if shorter_len >= longer_len * 0.6:
+                return True
 
         words1 = set(norm1.split())
         words2 = set(norm2.split())
@@ -996,9 +1115,10 @@ class PaperRetriever:
             return False
 
         # Check if all words from the shorter title are in the longer title
-        # This handles cases like partial titles
+        # This handles cases like partial titles, but only if word count is similar
+        # (to prevent matching e.g. "data format" with "new data format system for X")
         shorter, longer = (words1, words2) if len(words1) <= len(words2) else (words2, words1)
-        if shorter.issubset(longer):
+        if shorter.issubset(longer) and len(shorter) >= len(longer) * 0.6:
             return True
 
         # Fall back to Jaccard similarity
@@ -1082,7 +1202,11 @@ class PaperRetriever:
         """Retrieve PDFs for multiple papers.
 
         Args:
-            papers: List of dicts with 'doi' and/or 'title' keys
+            papers: List of dicts with keys: 'title', 'doi', 'arxiv_id', 'pdf_url'
+                   - title: Paper title (used for universal search)
+                   - doi: Paper DOI (optional)
+                   - arxiv_id: arXiv paper ID (optional, e.g., "2301.12345")
+                   - pdf_url: Direct PDF URL (optional, tried first if provided)
             output_dir: Override output directory
             verbose: Show progress
             save_progress: Save progress to file for resume
@@ -1118,7 +1242,9 @@ class PaperRetriever:
             async with semaphore:
                 doi = paper.get("doi")
                 title = paper.get("title", "")
-                identifier = doi or title
+                arxiv_id = paper.get("arxiv_id")
+                pdf_url = paper.get("pdf_url")
+                identifier = doi or title or arxiv_id or pdf_url
 
                 # Skip if already completed
                 if identifier in completed:
@@ -1133,7 +1259,14 @@ class PaperRetriever:
                 if verbose:
                     print(f"\n[{idx}/{total}] Processing: {identifier[:60]}...")
 
-                result = await self.retrieve(doi=doi, title=title, output_dir=out_dir, verbose=verbose)
+                result = await self.retrieve(
+                    doi=doi,
+                    title=title,
+                    arxiv_id=arxiv_id,
+                    pdf_url=pdf_url,
+                    output_dir=out_dir,
+                    verbose=verbose,
+                )
 
                 # Save progress
                 if save_progress and result.status in (RetrievalStatus.SUCCESS, RetrievalStatus.SKIPPED):

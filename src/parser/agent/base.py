@@ -54,19 +54,20 @@ Your task is to analyze the provided research document and extract ALL reference
 1. **github** - GitHub repositories (format: owner/repo)
 2. **arxiv** - arXiv papers (format: XXXX.XXXXX)
 3. **doi** - DOI identifiers (format: 10.XXXX/XXXXX)
-4. **paper** - Academic papers (include title, authors, year if available)
-5. **pdf** - Direct PDF links (ANY URL ending in .pdf)
-6. **youtube** - YouTube videos (video ID or URL)
-7. **podcast** - Podcast references
-8. **book** - Books (include ISBN if available) - NOT academic papers
-9. **website** - General websites and blog posts
+4. **paper** - ONLY peer-reviewed academic papers published in journals/conferences (include title, authors, year)
+5. **blog** - Blog posts and technical articles (Towards Data Science, Medium, dev.to, company blogs)
+6. **pdf** - Direct PDF links (ANY URL ending in .pdf)
+7. **youtube** - YouTube videos (video ID or URL)
+8. **podcast** - Podcast references
+9. **book** - Books (include ISBN if available) - NOT academic papers
+10. **website** - General websites, documentation, tutorials
 
-IMPORTANT RULES:
-- Extract ALL URLs you find, including PDF URLs and website URLs
-- PDF URLs are any URL ending in .pdf - extract these as type "pdf"
-- Blog posts, documentation sites, and tutorials should be type "website"
-- Academic papers should be type "paper", NOT "book"
+IMPORTANT RULES FOR PAPER vs BLOG:
+- Use "paper" ONLY for peer-reviewed academic papers with authors like "Author et al."
+- Use "blog" for articles on: Towards Data Science, Medium, dev.to, company tech blogs, personal blogs
+- Use "website" for documentation, tutorials, and general websites
 - Books are only for actual books (with ISBN), not research papers
+- PDF URLs are any URL ending in .pdf - extract these as type "pdf"
 
 For each reference, extract:
 - type: One of the categories above
@@ -234,6 +235,7 @@ Extract ALL references - be comprehensive. Do not miss any URLs."""
             "arxiv": ReferenceType.ARXIV,
             "doi": ReferenceType.DOI,
             "paper": ReferenceType.PAPER,
+            "blog": ReferenceType.BLOG,
             "pdf": ReferenceType.PDF,
             "youtube": ReferenceType.YOUTUBE,
             "podcast": ReferenceType.PODCAST,
